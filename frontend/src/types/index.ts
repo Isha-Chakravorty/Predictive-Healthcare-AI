@@ -219,10 +219,33 @@ export interface PredictionResult {
   diagnosis: string;
   probability: number;
   confidence: number;
-  riskFactors: RiskFactor[];
-  recommendations: string[];
+  riskFactors: Array<{
+    factor: string;
+    impact: 'low' | 'medium' | 'high';
+    value: string;
+    normalRange: string;
+  }>;
+  recommendations: PredictionRecommendation[];
+  insights: PredictionInsight[];
   followUpRequired: boolean;
   urgency: 'routine' | 'soon' | 'urgent' | 'emergency';
+  estimatedSeverity?: 'mild' | 'moderate' | 'severe';
+  overallHealthScore?: number;
+}
+
+export interface PredictionRecommendation {
+  id: string;
+  text: string;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  category: 'lifestyle' | 'medical' | 'dietary' | 'monitoring';
+  estimatedImpact: string;
+}
+
+export interface PredictionInsight {
+  id: string;
+  title: string;
+  description: string;
+  impactType: 'positive' | 'negative' | 'neutral';
 }
 
 export interface RiskFactor {

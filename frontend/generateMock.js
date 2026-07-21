@@ -103,15 +103,32 @@ for (let i = 1; i <= 300; i++) {
 }
 
 const predictions = [];
-for (let i = 1; i <= 350; i++) {
+for (let i = 1; i <= 550; i++) {
   const patient = getRandomItem(patients);
+  const disease = getRandomItem(diseases);
+  const risk = getRandomItem(riskLevels);
+  
+  const insights = [
+    { id: `ins_${getRandomInt(100, 999)}`, title: 'High Glucose Impact', description: 'Elevated glucose levels significantly contributed to this prediction risk.', impactType: 'negative' },
+    { id: `ins_${getRandomInt(100, 999)}`, title: 'Blood Pressure', description: 'Systolic pressure is above the optimal range, increasing cardiovascular strain.', impactType: 'negative' },
+    { id: `ins_${getRandomInt(100, 999)}`, title: 'Active Lifestyle', description: 'Current physical activity levels provide a protective effect.', impactType: 'positive' },
+    { id: `ins_${getRandomInt(100, 999)}`, title: 'Family History', description: 'Genetic predisposition factored into the baseline probability calculation.', impactType: 'neutral' }
+  ].slice(0, getRandomInt(2, 4));
+
+  const recommendations = [
+    { id: `rec_${getRandomInt(100, 999)}`, text: 'Schedule physician consultation within 14 days.', priority: 'high', category: 'medical', estimatedImpact: 'Critical for early intervention' },
+    { id: `rec_${getRandomInt(100, 999)}`, text: 'Increase moderate physical activity to 150 mins/week.', priority: 'medium', category: 'lifestyle', estimatedImpact: '-12% Risk Reduction' },
+    { id: `rec_${getRandomInt(100, 999)}`, text: 'Monitor fasting blood glucose bi-weekly.', priority: 'high', category: 'monitoring', estimatedImpact: 'Crucial for tracking progression' },
+    { id: `rec_${getRandomInt(100, 999)}`, text: 'Reduce dietary sodium intake.', priority: 'low', category: 'dietary', estimatedImpact: 'Minor positive impact on BP' }
+  ].slice(0, getRandomInt(2, 4));
+
   predictions.push({
     id: `pred_${i.toString().padStart(3, '0')}`,
     patientId: patient.id,
     patientName: `${patient.firstName} ${patient.lastName}`,
-    diseaseType: getRandomItem(diseases),
+    diseaseType: disease,
     probability: Math.random(),
-    riskLevel: getRandomItem(riskLevels),
+    riskLevel: risk,
     confidence: 0.7 + Math.random() * 0.28,
     status: 'completed',
     modelVersion: 'v2.4.0',
@@ -140,9 +157,12 @@ for (let i = 1; i <= 350; i++) {
         { factor: 'Age', impact: 'medium', value: `${patient.age}`, normalRange: '<60' },
         { factor: 'BMI', impact: patient.vitalSigns.bmi > 30 ? 'high' : 'low', value: patient.vitalSigns.bmi.toFixed(1), normalRange: '18.5-24.9' }
       ],
-      recommendations: ['Follow up in 30 days', 'Dietary modifications', 'Increase physical activity'],
+      recommendations,
+      insights,
       followUpRequired: Math.random() > 0.5,
       urgency: getRandomItem(['routine', 'soon', 'urgent']),
+      estimatedSeverity: getRandomItem(['mild', 'moderate', 'severe']),
+      overallHealthScore: patient.healthScore,
     },
   });
 }
