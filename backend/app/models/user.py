@@ -18,3 +18,4 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     patients = relationship("Patient", back_populates="creator")
+    predictions = relationship("Prediction", back_populates="creator")

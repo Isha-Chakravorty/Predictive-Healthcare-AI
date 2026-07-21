@@ -33,3 +33,4 @@ class Patient(Base):
     created_by = Column(Uuid, ForeignKey("users.id"))
     
     creator = relationship("User", back_populates="patients")
+    predictions = relationship("Prediction", back_populates="patient")
