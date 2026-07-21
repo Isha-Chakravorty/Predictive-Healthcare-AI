@@ -9,6 +9,8 @@ import { Input, PasswordInput, Select, Checkbox } from '../components/ui/Input';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { ROUTES } from '../constants';
+import { SocialLogins } from '../components/auth/SocialLogins';
+import { PasswordStrength } from '../components/auth/PasswordStrength';
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'First name too short'),
@@ -32,10 +34,12 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     defaultValues: { agreeToTerms: false },
   });
+
+  const passwordValue = watch('password');
 
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
@@ -78,7 +82,12 @@ export function RegisterPage() {
           {...register('role')}
         />
         <Input label="Department" placeholder="e.g. Cardiology" error={errors.department?.message} required {...register('department')} />
-        <PasswordInput label="Password" placeholder="••••••••" error={errors.password?.message} required hint="Minimum 8 characters" {...register('password')} />
+        
+        <div>
+          <PasswordInput label="Password" placeholder="••••••••" error={errors.password?.message} required hint="Minimum 8 characters" {...register('password')} />
+          <PasswordStrength password={passwordValue} />
+        </div>
+
         <PasswordInput label="Confirm Password" placeholder="••••••••" error={errors.confirmPassword?.message} required {...register('confirmPassword')} />
         <Checkbox
           label="I agree to the Terms of Service and Privacy Policy"
@@ -91,6 +100,8 @@ export function RegisterPage() {
           Create Account
         </Button>
       </form>
+
+      <SocialLogins action="Sign up" />
 
       <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-5">
         Already have an account?{' '}

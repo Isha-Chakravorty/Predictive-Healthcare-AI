@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Edit3, Trash2, Calendar, Phone, Mail, MapPin, Activity, 
@@ -15,20 +15,18 @@ import { Line, Doughnut } from 'react-chartjs-2';
 import { CHART_COLORS } from '../constants';
 
 export function PatientProfilePage() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { success, error } = useToast();
-  const [patient, setPatient] = useState<Patient | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'medical' | 'predictions'>('overview');
 
+  const patient = React.useMemo(() => mockPatients.find(p => p.id === id) || null, [id]);
+
   useEffect(() => {
-    // Find patient from mock data
-    const found = mockPatients.find(p => p.id === id);
-    if (found) {
-      setPatient(found);
-    } else {
+    if (!patient) {
       error('Not Found', 'Patient record could not be found.');
     }
-  }, [id, error]);
+  }, [patient, error]);
 
   if (!patient) {
     return (
@@ -103,7 +101,7 @@ export function PatientProfilePage() {
           </div>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button variant="outline" leftIcon={<Edit3 size={16} />} as={Link} to={`/patients/${patient.id}/edit`} className="flex-1 sm:flex-none justify-center">Edit</Button>
+          <Button variant="outline" leftIcon={<Edit3 size={16} />} onClick={() => navigate(`/patients/${patient.id}/edit`)} className="flex-1 sm:flex-none justify-center">Edit</Button>
           <Button variant="danger" leftIcon={<Trash2 size={16} />} onClick={() => success('Delete Initiated', 'This requires admin confirmation.')} className="flex-1 sm:flex-none justify-center">Delete</Button>
         </div>
       </div>
@@ -343,7 +341,7 @@ export function PatientProfilePage() {
                 <p className="text-sm text-slate-500 mt-2 max-w-md">
                   View the detailed history of predictive models run against this patient's health data.
                 </p>
-                <Button className="mt-6" as={Link} to={`/prediction?patientId=${patient.id}`}>
+                <Button className="mt-6" onClick={() => navigate(`/prediction?patientId=${patient.id}`)}>
                   Run New Prediction
                 </Button>
               </div>

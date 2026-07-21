@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Brain, Activity, Heart, Droplet, Wind, FileText, Lock, Plus } from 'lucide-react';
+import { Brain, Activity, Heart, Droplet, Wind, FileText, Lock, Plus, Clock, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { ROUTES } from '../constants';
 
@@ -156,6 +156,40 @@ export function PredictionPage() {
               <p className="text-xs text-slate-500 dark:text-slate-500">
                 {model.description}
               </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Mini Prediction History Preview */}
+      <section className="pt-6 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+            <Clock size={18} className="text-slate-400" />
+            Recent Predictions
+          </h2>
+          <Button variant="ghost" size="sm" rightIcon={<ChevronRight size={16} />} onClick={() => navigate(ROUTES.PREDICTION_HISTORY)}>
+            View All
+          </Button>
+        </div>
+        
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm divide-y divide-slate-100 dark:divide-slate-700/50">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+              <div className="flex items-center gap-4">
+                <div className={`p-2 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400`}>
+                  <Brain size={18} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-200">Diabetes Risk Assessment</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Patient ID: P-1004{i} • 2 days ago</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800">
+                  Medium Risk
+                </span>
+              </div>
             </div>
           ))}
         </div>

@@ -11,6 +11,7 @@ import { Checkbox } from '../components/ui/Input';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { ROUTES } from '../constants';
+import { SocialLogins } from '../components/auth/SocialLogins';
 
 const loginSchema = z.object({
   email: z.email('Enter a valid email'),
@@ -89,6 +90,8 @@ export function LoginPage() {
           Sign In
         </Button>
       </form>
+
+      <SocialLogins action="Sign in" />
 
       <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-6">
         Don't have an account?{' '}

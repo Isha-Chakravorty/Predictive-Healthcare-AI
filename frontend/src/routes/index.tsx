@@ -23,6 +23,10 @@ const ProfilePage          = lazy(() => import('../pages/ProfilePage').then(m =>
 const LoginPage            = lazy(() => import('../pages/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterPage         = lazy(() => import('../pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const ForgotPasswordPage   = lazy(() => import('../pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage    = lazy(() => import('../pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const VerifyEmailPage      = lazy(() => import('../pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
+const TwoFactorAuthPage    = lazy(() => import('../pages/TwoFactorAuthPage').then(m => ({ default: m.TwoFactorAuthPage })));
+const SessionExpiredPage   = lazy(() => import('../pages/SessionExpiredPage').then(m => ({ default: m.SessionExpiredPage })));
 const NotFoundPage         = lazy(() => import('../pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
 const PageWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -108,6 +112,22 @@ const router = createBrowserRouter([
       {
         path: ROUTES.FORGOT_PASSWORD,
         element: <PageWrapper><ForgotPasswordPage /></PageWrapper>,
+      },
+      {
+        path: ROUTES.RESET_PASSWORD,
+        element: <PageWrapper><ResetPasswordPage /></PageWrapper>,
+      },
+      {
+        path: ROUTES.VERIFY_EMAIL,
+        element: <PageWrapper><VerifyEmailPage /></PageWrapper>,
+      },
+      {
+        path: ROUTES.TWO_FACTOR_AUTH,
+        element: <PageWrapper><TwoFactorAuthPage /></PageWrapper>,
+      },
+      {
+        path: ROUTES.SESSION_EXPIRED,
+        element: <PageWrapper><SessionExpiredPage /></PageWrapper>,
       },
     ],
   },

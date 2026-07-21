@@ -109,7 +109,16 @@ export const ROUTES = {
   LOGIN:              '/login',
   REGISTER:           '/register',
   FORGOT_PASSWORD:    '/forgot-password',
+  RESET_PASSWORD:     '/reset-password',
+  VERIFY_EMAIL:       '/verify-email',
+  TWO_FACTOR_AUTH:    '/2fa',
+  SESSION_EXPIRED:    '/session-expired',
+  HELP_CENTER:        '/help',
   NOT_FOUND:          '/404',
+  UNAUTHORIZED:       '/403',
+  SERVER_ERROR:       '/500',
+  MAINTENANCE:        '/maintenance',
+  OFFLINE:            '/offline',
 };
 
 // Date formats
