@@ -6,6 +6,7 @@ import { RiskBadge, StatusBadge } from '../components/ui/Badge';
 import { useToast } from '../context/ToastContext';
 import { mockPatients } from '../mock';
 import type { Patient } from '../types';
+import { formatDate } from '../utils';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../constants';
 import { EmptyState } from '../components/ui/EmptyState';

@@ -95,8 +95,8 @@ export function SettingsPage() {
             <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Appearance</h3>
             <div>
               <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Theme Options</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {(['light', 'dark', 'system'] as const).map(t => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(['light', 'dark'] as const).map(t => (
                   <button
                     key={t}
                     onClick={() => setTheme(t)}
