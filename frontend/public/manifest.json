@@ -1,0 +1,17 @@
+{
+  "name": "Predictive Healthcare AI",
+  "short_name": "HealthAI",
+  "description": "Enterprise-grade AI-powered healthcare analytics platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
