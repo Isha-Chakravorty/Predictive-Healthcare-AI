@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import type { SortState } from '../../types';

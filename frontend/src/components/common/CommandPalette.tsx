@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Monitor, Settings, Users, Brain, Home, X } from 'lucide-react';
+import { Search, Monitor, Settings, Users, Brain, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ROUTES } from '../../constants';
 

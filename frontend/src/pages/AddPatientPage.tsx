@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, ArrowRight, Save, User, Activity, Coffee, CheckCircle, AlertCircle } from 'lucide-react';
@@ -46,6 +46,7 @@ export function AddPatientPage() {
     : {};
 
   const methods = useForm<PatientFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(patientSchema) as any,
     defaultValues: {
       firstName: draftData.firstName || '',
@@ -65,16 +66,13 @@ export function AddPatientPage() {
     mode: 'onTouched',
   });
 
-  const { handleSubmit, trigger, watch, formState: { errors, isValid } } = methods;
-  const formValues = watch();
+  const { handleSubmit, trigger, formState: { errors, isValid } } = methods;
+  const formValues = useWatch({ control: methods.control }) as PatientFormData;
 
   useEffect(() => {
     // Autosave draft
-    const subscription = watch((value) => {
-      localStorage.setItem('patientDraft', JSON.stringify(value));
-    });
-    return () => subscription.unsubscribe();
-  }, [watch]);
+    localStorage.setItem('patientDraft', JSON.stringify(formValues));
+  }, [formValues]);
 
   const handleNext = async () => {
     let fieldsToValidate: (keyof PatientFormData)[] = [];
@@ -94,8 +92,7 @@ export function AddPatientPage() {
     setCurrentStep(prev => Math.max(prev - 1, 0));
   };
 
-  const onSubmit = (data: PatientFormData) => {
-    console.log('Submitted', data);
+  const onSubmit = (_data: PatientFormData) => {
     localStorage.removeItem('patientDraft');
     success('Patient Registered', 'The patient has been successfully added to the system.');
     navigate(ROUTES.PATIENTS);
@@ -139,6 +136,7 @@ export function AddPatientPage() {
       {/* Form Content */}
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden min-h-[400px] flex flex-col">
         <FormProvider {...methods}>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <form onSubmit={handleSubmit(onSubmit as any)} className="flex flex-col flex-1">
             
             <div className="p-6 flex-1">

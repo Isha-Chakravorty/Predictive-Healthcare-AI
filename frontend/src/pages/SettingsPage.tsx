@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Bell, Shield, Palette, Globe, Database, Monitor, Keyboard, Info, Download, Trash2, ShieldAlert } from 'lucide-react';
+import { Settings, Bell, Shield, Palette, Database, Monitor, Keyboard, Info, Download, Trash2, ShieldAlert } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { Input, Select } from '../components/ui/Input';
+import { Select } from '../components/ui/Input';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
 

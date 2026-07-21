@@ -6,7 +6,6 @@ import {
   Sun,
   Moon,
   Menu,
-  Search,
   ChevronDown,
   User,
   Settings,

@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { History, Download, Filter, Bookmark, FileSpreadsheet, Printer, Search } from 'lucide-react';
+import { History, Download, Filter, FileSpreadsheet, Printer, Search } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Table } from '../components/ui/Table';
 import { Pagination } from '../components/ui/Pagination';
-import { RiskBadge, StatusBadge, ScoreBadge } from '../components/ui/Badge';
-import { Select, Input } from '../components/ui/Input';
+import { RiskBadge, ScoreBadge } from '../components/ui/Badge';
 import { predictionService } from '../services/mockService';
 import { useToast } from '../context/ToastContext';
 import { ROUTES, DISEASE_LABELS } from '../constants';
@@ -26,7 +25,6 @@ export function PredictionHistoryPage() {
   const [search, setSearch] = useState('');
   const [diseaseFilter, setDiseaseFilter] = useState('all');
   const [riskFilter, setRiskFilter] = useState('all');
-  const [doctorFilter, setDoctorFilter] = useState('all');
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -47,18 +45,15 @@ export function PredictionHistoryPage() {
       if (riskFilter !== 'all') {
         filteredData = filteredData.filter(p => p.riskLevel === riskFilter);
       }
-      if (doctorFilter !== 'all') {
-        filteredData = filteredData.filter(p => p.requestedBy === doctorFilter);
-      }
       
       setPredictions(filteredData);
       setTotal(res.pagination.total); // Note: total might not perfectly reflect client-side filtering in mock
-    } catch (e) {
+    } catch {
       error('Error', 'Failed to load prediction history.');
     } finally {
       setIsLoading(false);
     }
-  }, [page, pageSize, search, diseaseFilter, riskFilter, doctorFilter, error]);
+  }, [page, pageSize, search, diseaseFilter, riskFilter, error]);
 
   useEffect(() => {
     const t = setTimeout(load, search ? 300 : 0);

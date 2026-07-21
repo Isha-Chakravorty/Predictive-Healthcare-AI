@@ -3,11 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, Download, Share2, Printer, BookmarkPlus, AlertTriangle, 
-  CheckCircle, BrainCircuit, Activity, Info, ChevronRight, TrendingUp, TrendingDown, Minus
+  CheckCircle, BrainCircuit, Activity, TrendingUp, TrendingDown, Minus
 } from 'lucide-react';
 import { Doughnut } from 'react-chartjs-2';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
 import { useToast } from '../context/ToastContext';
 import { ROUTES, DISEASE_LABELS } from '../constants';
 import { predictionService } from '../services/mockService';
@@ -38,7 +37,7 @@ export function PredictionResultPage() {
              navigate(ROUTES.PREDICTION);
           }
         }
-      } catch(e) {
+      } catch {
         error('Error', 'Failed to load prediction result.');
       } finally {
         setIsLoading(false);
@@ -208,7 +207,7 @@ export function PredictionResultPage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {prediction.result.insights?.map((insight, idx) => (
+              {prediction.result.insights?.map((insight) => (
                 <div key={insight.id} className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 flex items-start gap-3">
                   <div className={`p-2 rounded-full mt-0.5 shrink-0 ${
                     insight.impactType === 'negative' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' :
@@ -273,7 +272,7 @@ export function PredictionResultPage() {
             </div>
             
             <div className="space-y-3">
-              {prediction.result.recommendations?.map((rec, idx) => (
+              {prediction.result.recommendations?.map((rec) => (
                 <div key={rec.id} className="p-4 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors flex items-start gap-4">
                   <div className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider shrink-0 mt-0.5 ${
                     rec.priority === 'high' || rec.priority === 'critical' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400' :

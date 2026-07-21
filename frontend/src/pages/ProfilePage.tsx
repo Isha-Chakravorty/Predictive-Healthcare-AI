@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Edit3, Save, X, Mail, Phone, Building, Stethoscope, Calendar, Shield, MapPin, Activity, Clock, ShieldCheck, Lock } from 'lucide-react';
+import { Camera, Edit3, Save, X, Mail, Phone, Building, Stethoscope, Calendar, Shield, Activity, Clock, ShieldCheck, Lock } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { Input, Textarea, Select } from '../components/ui/Input';
+import { Input, Textarea } from '../components/ui/Input';
 import { StatusBadge } from '../components/ui/Badge';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -56,7 +56,7 @@ export function ProfilePage() {
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id as 'profile' | 'security' | 'activity')}
             className={`flex items-center gap-2 px-1 pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.id 
                 ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' 

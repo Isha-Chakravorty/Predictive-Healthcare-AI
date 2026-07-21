@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, ArrowRight, Activity, Heart, Droplet, User, Coffee, FileText, CheckCircle, BrainCircuit } from 'lucide-react';
@@ -55,7 +55,6 @@ export function NewPredictionPage() {
   
   const [currentStep, setCurrentStep] = useState(0);
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
   // Load Draft
@@ -65,6 +64,7 @@ export function NewPredictionPage() {
     : {};
 
   const methods = useForm<PredictionFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(predictionSchema) as any,
     defaultValues: {
       patientId: initialPatientId || draftData.patientId || '',
@@ -92,16 +92,28 @@ export function NewPredictionPage() {
     mode: 'onTouched',
   });
 
-  const { handleSubmit, trigger, watch, reset, setValue } = methods;
-  const formValues = watch();
+  const { handleSubmit, trigger, setValue } = methods;
+  const formValues = useWatch({ control: methods.control }) as PredictionFormData;
 
   useEffect(() => {
     // Autosave
-    const subscription = watch((value) => {
-      localStorage.setItem(draftKey, JSON.stringify(value));
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, draftKey]);
+    localStorage.setItem(draftKey, JSON.stringify(formValues));
+  }, [formValues, draftKey]);
+
+  const prefillFromPatient = (p: Patient) => {
+    setValue('patientId', p.id);
+    setValue('age', p.age);
+    setValue('gender', p.gender as 'male' | 'female' | 'other');
+    setValue('bloodPressureSystolic', p.vitalSigns.bloodPressureSystolic);
+    setValue('bloodPressureDiastolic', p.vitalSigns.bloodPressureDiastolic);
+    setValue('heartRate', p.vitalSigns.heartRate);
+    setValue('glucoseLevel', p.vitalSigns.glucoseLevel);
+    setValue('smokingStatus', (p.lifestyle?.smokingStatus as 'never' | 'former' | 'current') || 'never');
+    setValue('alcoholConsumption', (p.lifestyle?.alcoholConsumption as 'none' | 'light' | 'moderate' | 'heavy') || 'none');
+    setValue('exerciseFrequency', (p.lifestyle?.physicalActivity as 'sedentary' | 'light' | 'moderate' | 'active') || 'moderate');
+    setValue('familyHistory', p.familyHistory?.join(', ') || 'None');
+    setValue('previousConditions', p.conditions.join(', ') || 'None');
+  };
 
   useEffect(() => {
     // Load patients for dropdown
@@ -116,23 +128,8 @@ export function NewPredictionPage() {
       }
     };
     fetchPatients();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPatientId]);
-
-  const prefillFromPatient = (p: Patient) => {
-    setSelectedPatient(p);
-    setValue('patientId', p.id);
-    setValue('age', p.age);
-    setValue('gender', p.gender as any);
-    setValue('bloodPressureSystolic', p.vitalSigns.bloodPressureSystolic);
-    setValue('bloodPressureDiastolic', p.vitalSigns.bloodPressureDiastolic);
-    setValue('heartRate', p.vitalSigns.heartRate);
-    setValue('glucoseLevel', p.vitalSigns.glucoseLevel);
-    setValue('smokingStatus', p.lifestyle?.smokingStatus as any || 'never');
-    setValue('alcoholConsumption', p.lifestyle?.alcoholConsumption as any || 'none');
-    setValue('exerciseFrequency', p.lifestyle?.physicalActivity as any || 'moderate');
-    setValue('familyHistory', p.familyHistory?.join(', ') || 'None');
-    setValue('previousConditions', p.conditions.join(', ') || 'None');
-  };
 
   const handleNext = async () => {
     let fieldsToValidate: (keyof PredictionFormData)[] = [];
@@ -154,7 +151,7 @@ export function NewPredictionPage() {
     setCurrentStep(prev => Math.max(prev - 1, 0));
   };
 
-  const onSubmit = async (data: PredictionFormData) => {
+  const onSubmit = async () => {
     setIsRunning(true);
     // Simulate AI inference delay
     setTimeout(() => {
@@ -220,6 +217,7 @@ export function NewPredictionPage() {
         )}
 
         <FormProvider {...methods}>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <form onSubmit={handleSubmit(onSubmit as any)} className="flex flex-col flex-1">
             
             <div className="p-6 flex-1">

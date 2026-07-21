@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Search, BookOpen, MessageCircle, FileText, Keyboard, Info, ExternalLink } from 'lucide-react';
 import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
 
 export function HelpCenterPage() {
   return (

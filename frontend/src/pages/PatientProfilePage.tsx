@@ -3,13 +3,12 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Edit3, Trash2, Calendar, Phone, Mail, MapPin, Activity, 
-  HeartPulse, FileText, Clock, AlertTriangle, Syringe, Pill, TrendingUp, ShieldAlert
+  HeartPulse, FileText, Syringe, Pill, TrendingUp, ShieldAlert
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge, RiskBadge, StatusBadge } from '../components/ui/Badge';
 import { useToast } from '../context/ToastContext';
 import { mockPatients } from '../mock';
-import type { Patient } from '../types';
 import { formatDate } from '../utils';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { CHART_COLORS } from '../constants';
@@ -93,7 +92,7 @@ export function PatientProfilePage() {
                 {patient.firstName} {patient.lastName}
               </h1>
               <StatusBadge status={patient.status} />
-              <RiskBadge level={patient.riskLevel as any} />
+              <RiskBadge level={patient.riskLevel as 'low' | 'moderate' | 'high' | 'critical'} />
             </div>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 font-mono">
               ID: {patient.patientId}
@@ -180,7 +179,7 @@ export function PatientProfilePage() {
             {['overview', 'medical', 'predictions'].map(tab => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab as any)}
+                onClick={() => setActiveTab(tab as 'overview' | 'medical' | 'predictions')}
                 className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors capitalize ${
                   activeTab === tab 
                     ? 'border-blue-600 text-blue-600 dark:text-blue-400' 

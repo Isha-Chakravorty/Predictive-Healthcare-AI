@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod/v4';
 import { UserPlus } from 'lucide-react';
@@ -34,12 +34,12 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>({
+  const { register, handleSubmit, formState: { errors }, control } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     defaultValues: { agreeToTerms: false },
   });
 
-  const passwordValue = watch('password');
+  const passwordValue = useWatch({ control, name: 'password' }) || '';
 
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);

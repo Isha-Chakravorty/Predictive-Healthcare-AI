@@ -67,6 +67,7 @@ const containerVariants = {
   }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const itemVariants: any = {
   hidden: { y: 20, opacity: 0 },
   show: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 24 } }

@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useEffect, memo } from 'react';
-import { Search, ChevronDown, ChevronUp, Columns, Download, Trash2, Filter, Settings, FileSpreadsheet } from 'lucide-react';
+import React, { useState, useMemo, memo } from 'react';
+import { Search, ChevronDown, ChevronUp, Columns, Download, Trash2, Filter, FileSpreadsheet } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './Button';
-import { Badge } from './Badge';
 
 export interface ColumnDef<T> {
   id: string;
@@ -45,8 +44,8 @@ function AdvancedTableInner<T extends { id: string | number }>({
     // Global Search
     if (globalSearch) {
       const lowerQuery = globalSearch.toLowerCase();
-      result = result.filter((item: any) =>
-        Object.values(item).some(
+      result = result.filter((item) =>
+        Object.values(item as Record<string, unknown>).some(
           val => val !== null && val !== undefined && String(val).toLowerCase().includes(lowerQuery)
         )
       );
@@ -118,9 +117,9 @@ function AdvancedTableInner<T extends { id: string | number }>({
       : processedData;
     
     const headers = activeColumns.map(c => c.header).join(',');
-    const rows = exportData.map((item: any) => 
+    const rows = exportData.map((item) => 
       activeColumns.map(col => {
-        let val = col.accessorKey ? item[col.accessorKey] : '';
+        let val = col.accessorKey ? item[col.accessorKey as keyof T] : '';
         // Escape quotes
         val = String(val || '').replace(/"/g, '""');
         return `"${val}"`;

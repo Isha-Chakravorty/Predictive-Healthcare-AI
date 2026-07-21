@@ -1,4 +1,4 @@
-import React, { forwardRef, useState, useId } from 'react';
+import React, { forwardRef, useId } from 'react';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 // ============================================================

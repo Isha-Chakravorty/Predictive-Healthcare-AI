@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Users, Brain, TrendingUp, AlertTriangle,
-  Activity, ArrowUpRight, Calendar, Clock, Heart, ArrowRight, Bell
+  Activity, ArrowUpRight, Calendar, Heart, ArrowRight, Bell
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -13,9 +13,9 @@ import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { StatCard } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { StatCardSkeleton, ChartSkeleton, ActivitySkeleton } from '../components/ui/Skeleton';
-import { dashboardService } from '../services/mockService';
+
 import { mockPatients, mockPredictions, mockRecentActivity, mockDashboardStats, mockCheckups, mockNotifications } from '../mock';
-import type { DashboardStats, RecentActivity, Patient, DiseasePrediction } from '../types';
+import type { DashboardStats } from '../types';
 import { formatDate } from '../utils';
 import { CHART_COLORS } from '../constants';
 import { Link } from 'react-router-dom';

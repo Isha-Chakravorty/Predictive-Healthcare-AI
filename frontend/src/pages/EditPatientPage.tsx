@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, ArrowRight, Save, User, Activity, Coffee, CheckCircle, AlertCircle } from 'lucide-react';
@@ -44,12 +44,13 @@ export function EditPatientPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const methods = useForm<PatientFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(patientSchema) as any,
     mode: 'onTouched',
   });
 
-  const { handleSubmit, trigger, watch, reset, formState: { errors, isValid } } = methods;
-  const formValues = watch();
+  const { handleSubmit, trigger, reset, formState: { errors, isValid } } = methods;
+  const formValues = useWatch({ control: methods.control }) as PatientFormData;
 
   useEffect(() => {
     async function loadPatient() {
@@ -62,22 +63,22 @@ export function EditPatientPage() {
             firstName: p.firstName,
             lastName: p.lastName,
             age: p.age,
-            gender: p.gender as any,
+            gender: p.gender as 'male' | 'female' | 'other',
             email: p.email,
             phone: p.phone,
-            bloodType: p.bloodType as any,
+            bloodType: p.bloodType as 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-',
             allergies: p.medicalHistory?.allergies?.join(', ') || 'None',
             chronicConditions: p.conditions.join(', ') || 'None',
-            smokingStatus: p.lifestyle?.smokingStatus as any || 'never',
-            alcoholConsumption: p.lifestyle?.alcoholConsumption as any || 'none',
-            physicalActivity: p.lifestyle?.physicalActivity as any || 'light',
+            smokingStatus: (p.lifestyle?.smokingStatus as 'never' | 'former' | 'current') || 'never',
+            alcoholConsumption: (p.lifestyle?.alcoholConsumption as 'none' | 'light' | 'moderate' | 'heavy') || 'none',
+            physicalActivity: (p.lifestyle?.physicalActivity as 'sedentary' | 'light' | 'moderate' | 'active') || 'light',
             diet: p.lifestyle?.diet || 'Balanced',
           });
         } else {
           error('Error', 'Patient not found');
           navigate(ROUTES.PATIENTS);
         }
-      } catch (e) {
+      } catch {
         error('Error', 'Failed to load patient');
       } finally {
         setIsLoading(false);
@@ -104,8 +105,7 @@ export function EditPatientPage() {
     setCurrentStep(prev => Math.max(prev - 1, 0));
   };
 
-  const onSubmit = (data: PatientFormData) => {
-    console.log('Updated', data);
+  const onSubmit = (_data: PatientFormData) => {
     success('Patient Updated', 'Changes have been successfully saved.');
     navigate(ROUTES.PATIENT_DETAIL.replace(':id', id!));
   };
@@ -159,6 +159,7 @@ export function EditPatientPage() {
       {/* Form Content */}
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden min-h-[400px] flex flex-col">
         <FormProvider {...methods}>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <form onSubmit={handleSubmit(onSubmit as any)} className="flex flex-col flex-1">
             
             <div className="p-6 flex-1">

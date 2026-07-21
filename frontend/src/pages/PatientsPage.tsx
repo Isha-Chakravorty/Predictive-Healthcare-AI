@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, Plus, Download } from 'lucide-react';
+import { Users, Plus } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { AdvancedTable, ColumnDef } from '../components/ui/AdvancedTable';
 import { RiskBadge, StatusBadge } from '../components/ui/Badge';

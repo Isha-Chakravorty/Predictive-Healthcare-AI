@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod/v4';
-import { KeyRound, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { PasswordInput } from '../components/ui/Input';
 import { useToast } from '../context/ToastContext';
@@ -28,7 +28,7 @@ export function ResetPasswordPage() {
     resolver: zodResolver(resetSchema),
   });
 
-  const onSubmit = async (data: ResetForm) => {
+  const onSubmit = async () => {
     setIsLoading(true);
     // Mock API call
     await new Promise(r => setTimeout(r, 1500));

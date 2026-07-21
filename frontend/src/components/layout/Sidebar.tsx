@@ -1,11 +1,10 @@
-import React, { useState, memo, useCallback } from 'react';
+import React, { useState, memo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   Users,
   Brain,
-  History,
   BarChart3,
   Activity,
   Settings,
@@ -15,7 +14,7 @@ import {
   Stethoscope,
   ChevronDown,
 } from 'lucide-react';
-import { ROUTES, STORAGE_KEYS } from '../../constants';
+import { ROUTES } from '../../constants';
 
 interface NavItem {
   label: string;
