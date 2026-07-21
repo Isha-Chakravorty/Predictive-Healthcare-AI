@@ -99,6 +99,8 @@ export const ROUTES = {
   PATIENT_DETAIL:     '/patients/:id',
   PATIENT_EDIT:       '/patients/:id/edit',
   PREDICTION:         '/prediction',
+  PREDICTION_NEW:     '/prediction/new/:type',
+  PREDICTION_RESULT:  '/prediction/result/:id',
   PREDICTION_HISTORY: '/prediction/history',
   ANALYTICS:          '/analytics',
   MODEL_PERFORMANCE:  '/model-performance',

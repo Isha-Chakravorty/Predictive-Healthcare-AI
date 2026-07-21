@@ -12,8 +12,10 @@ const PatientsPage         = lazy(() => import('../pages/PatientsPage').then(m =
 const PatientProfilePage   = lazy(() => import('../pages/PatientProfilePage').then(m => ({ default: m.PatientProfilePage })));
 const AddPatientPage       = lazy(() => import('../pages/AddPatientPage').then(m => ({ default: m.AddPatientPage })));
 const EditPatientPage      = lazy(() => import('../pages/EditPatientPage').then(m => ({ default: m.EditPatientPage })));
-const PredictionPage       = lazy(() => import('../pages/PredictionPage').then(m => ({ default: m.PredictionPage })));
-const PredictionHistoryPage= lazy(() => import('../pages/PredictionHistoryPage').then(m => ({ default: m.PredictionHistoryPage })));
+const PredictionPage = lazy(() => import('../pages/PredictionPage').then(m => ({ default: m.PredictionPage })));
+const NewPredictionPage = lazy(() => import('../pages/NewPredictionPage').then(m => ({ default: m.NewPredictionPage })));
+const PredictionResultPage = lazy(() => import('../pages/PredictionResultPage').then(m => ({ default: m.PredictionResultPage })));
+const PredictionHistoryPage = lazy(() => import('../pages/PredictionHistoryPage').then(m => ({ default: m.PredictionHistoryPage })));
 const AnalyticsPage        = lazy(() => import('../pages/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
 const ModelPerformancePage = lazy(() => import('../pages/ModelPerformancePage').then(m => ({ default: m.ModelPerformancePage })));
 const SettingsPage         = lazy(() => import('../pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
@@ -61,6 +63,14 @@ const router = createBrowserRouter([
       {
         path: ROUTES.PREDICTION,
         element: <PageWrapper><PredictionPage /></PageWrapper>,
+      },
+      {
+        path: ROUTES.PREDICTION_NEW,
+        element: <PageWrapper><NewPredictionPage /></PageWrapper>,
+      },
+      {
+        path: ROUTES.PREDICTION_RESULT,
+        element: <PageWrapper><PredictionResultPage /></PageWrapper>,
       },
       {
         path: ROUTES.PREDICTION_HISTORY,
