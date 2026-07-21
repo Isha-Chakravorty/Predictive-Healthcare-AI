@@ -28,6 +28,10 @@ const VerifyEmailPage      = lazy(() => import('../pages/VerifyEmailPage').then(
 const TwoFactorAuthPage    = lazy(() => import('../pages/TwoFactorAuthPage').then(m => ({ default: m.TwoFactorAuthPage })));
 const SessionExpiredPage   = lazy(() => import('../pages/SessionExpiredPage').then(m => ({ default: m.SessionExpiredPage })));
 const HelpCenterPage       = lazy(() => import('../pages/HelpCenterPage').then(m => ({ default: m.HelpCenterPage })));
+const UnauthorizedPage     = lazy(() => import('../pages/UnauthorizedPage').then(m => ({ default: m.UnauthorizedPage })));
+const ServerErrorPage      = lazy(() => import('../pages/ServerErrorPage').then(m => ({ default: m.ServerErrorPage })));
+const MaintenancePage      = lazy(() => import('../pages/MaintenancePage').then(m => ({ default: m.MaintenancePage })));
+const OfflinePage          = lazy(() => import('../pages/OfflinePage').then(m => ({ default: m.OfflinePage })));
 const NotFoundPage         = lazy(() => import('../pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
 const PageWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -139,6 +143,22 @@ const router = createBrowserRouter([
   {
     path: '*',
     element: <PageWrapper><NotFoundPage /></PageWrapper>,
+  },
+  {
+    path: ROUTES.UNAUTHORIZED,
+    element: <PageWrapper><UnauthorizedPage /></PageWrapper>,
+  },
+  {
+    path: ROUTES.SERVER_ERROR,
+    element: <PageWrapper><ServerErrorPage /></PageWrapper>,
+  },
+  {
+    path: ROUTES.MAINTENANCE,
+    element: <PageWrapper><MaintenancePage /></PageWrapper>,
+  },
+  {
+    path: ROUTES.OFFLINE,
+    element: <PageWrapper><OfflinePage /></PageWrapper>,
   },
 ]);
 
