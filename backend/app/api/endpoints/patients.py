@@ -6,7 +6,9 @@ from uuid import UUID
 from app.api.dependencies import get_db, get_current_user
 from app.models.user import User
 from app.schemas.patient import PatientCreate, PatientUpdate, PatientResponse
+from app.schemas.prediction import PredictionResponse
 from app.crud import patient as crud_patient
+from app.crud import prediction as crud_prediction
 
 router = APIRouter(prefix="/patients", tags=["patients"])
 
@@ -63,3 +65,20 @@ def delete_patient(
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
     return crud_patient.delete_patient(db=db, db_patient=patient)
+
+@router.get("/{patient_id}/predictions", response_model=List[PredictionResponse])
+def read_patient_predictions(
+    patient_id: UUID,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Verify patient ownership first
+    patient = crud_patient.get_patient(db=db, patient_id=patient_id, user_id=current_user.id)
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+        
+    return crud_prediction.get_predictions(
+        db=db, user_id=current_user.id, patient_id=patient_id, skip=skip, limit=limit
+    )

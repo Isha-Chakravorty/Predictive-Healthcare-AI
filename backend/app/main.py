@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import auth, patients
+from app.api.endpoints import auth, patients, predictions
 
 app = FastAPI(
     title="Predictive Healthcare AI API",
@@ -19,6 +19,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(patients.router)
+app.include_router(predictions.router)
 
 @app.get("/api/health")
 async def health_check():
