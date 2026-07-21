@@ -6,7 +6,8 @@ from uuid import UUID
 from app.models.prediction import Prediction
 from app.models.patient import Patient
 from app.schemas.prediction import PredictionCreate
-from app.ml.mock_service import predict_disease
+from fastapi import HTTPException
+from app.ml.service import ml_service
 
 def get_prediction(db: Session, prediction_id: UUID, user_id: UUID) -> Optional[Prediction]:
     return db.query(Prediction).filter(
@@ -35,8 +36,13 @@ def get_predictions(
     return query.order_by(desc(Prediction.created_at)).offset(skip).limit(limit).all()
 
 def create_prediction(db: Session, prediction_in: PredictionCreate, user_id: UUID) -> Prediction:
-    # 1. Run mock ML prediction
-    result = predict_disease(prediction_in.input_features)
+    # 1. Run real ML prediction
+    try:
+        result = ml_service.predict(prediction_in.input_features)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     
     # 2. Save to database
     db_prediction = Prediction(
