@@ -117,6 +117,13 @@ The backend provides a secure, token-based (JWT) API.
 - `GET /patients/{id}` - Retrieve a specific patient record.
 - `PUT /patients/{id}` - Update a specific patient's details.
 - `DELETE /patients/{id}` - Soft delete a patient record.
+- `GET /patients/{id}/predictions` - Retrieve all predictions associated with a specific patient.
+
+**Disease Prediction:**
+- `POST /predictions` - Trigger a disease prediction for a patient.
+- `GET /predictions` - Retrieve prediction history (supports filtering by `disease`, `risk_level`, `patient_id`).
+- `GET /predictions/{id}` - Retrieve detailed prediction results and AI explanations.
+- `DELETE /predictions/{id}` - Remove a prediction record.
 
 ## Project Architecture Overview
 
