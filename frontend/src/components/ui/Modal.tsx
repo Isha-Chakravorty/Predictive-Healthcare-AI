@@ -85,13 +85,16 @@ export function Modal({
               sizeClasses[size],
             ].join(' ')}
             onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? "modal-title" : undefined}
           >
             {/* Header */}
             {(title || showCloseButton) && (
               <div className="flex items-start justify-between p-5 border-b border-slate-200 dark:border-slate-700 shrink-0">
                 <div>
                   {title && (
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    <h2 id="modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
                       {title}
                     </h2>
                   )}

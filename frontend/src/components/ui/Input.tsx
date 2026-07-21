@@ -59,6 +59,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={inputId}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
             className={[
               'w-full rounded-lg border transition-all duration-200 outline-none',
               'bg-white dark:bg-slate-900',
@@ -84,13 +86,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p className="mt-1.5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+          <p id={`${inputId}-error`} className="mt-1.5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
             <AlertCircle size={12} />
             {error}
           </p>
         )}
         {hint && !error && (
-          <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{hint}</p>
+          <p id={`${inputId}-hint`} className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{hint}</p>
         )}
       </div>
     );

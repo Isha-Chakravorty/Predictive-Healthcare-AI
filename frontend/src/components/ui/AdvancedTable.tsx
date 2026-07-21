@@ -277,6 +277,7 @@ function AdvancedTableInner<T extends { id: string | number }>({
                       className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                       checked={selectedIds.has(item.id)}
                       onChange={() => toggleSelect(item.id)}
+                      aria-label={`Select row ${item.id}`}
                     />
                   </td>
                   {activeColumns.map((col, index) => (

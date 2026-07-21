@@ -88,6 +88,7 @@ export function Button({
       disabled={isDisabled}
       type={type}
       onClick={onClick}
+      {...rest}
     >
       {isLoading ? (
         <Loader2 className="animate-spin" size={size === 'xs' ? 12 : 16} />
