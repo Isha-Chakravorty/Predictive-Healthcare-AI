@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Sidebar } from '../components/layout/Sidebar';
 import { Navbar } from '../components/layout/Navbar';
 import { ToastContainer } from '../components/ui/Toast';
+import { CommandPalette } from '../components/common/CommandPalette';
 import { STORAGE_KEYS } from '../constants';
 
 export function AppLayout() {
@@ -61,6 +62,7 @@ export function AppLayout() {
       </motion.div>
 
       <ToastContainer />
+      <CommandPalette />
     </div>
   );
 }

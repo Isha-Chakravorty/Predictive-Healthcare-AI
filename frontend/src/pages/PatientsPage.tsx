@@ -6,9 +6,9 @@ import { RiskBadge, StatusBadge } from '../components/ui/Badge';
 import { useToast } from '../context/ToastContext';
 import { mockPatients } from '../mock';
 import type { Patient } from '../types';
-import { formatDate } from '../utils';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../constants';
+import { EmptyState } from '../components/ui/EmptyState';
 
 export function PatientsPage() {
   const { success } = useToast();
@@ -159,17 +159,29 @@ export function PatientsPage() {
         </div>
       </div>
 
-      {/* Advanced Table */}
-      <div className="flex-1 min-h-0 relative">
-        <AdvancedTable 
-          data={patients}
-          columns={columns}
-          loading={isLoading}
-          onRowClick={handleRowClick}
-          onBulkDelete={handleBulkDelete}
-          onBulkExport={handleBulkExport}
+      {!isLoading && patients.length === 0 ? (
+        <EmptyState
+          icon={<Users size={32} />}
+          title="No patients found"
+          description="Get started by adding a new patient to your directory."
+          action={
+            <Button onClick={() => navigate(ROUTES.PATIENT_NEW)} leftIcon={<Plus size={16} />}>
+              Add First Patient
+            </Button>
+          }
         />
-      </div>
+      ) : (
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+          <AdvancedTable
+            data={patients}
+            columns={columns}
+            onRowClick={handleRowClick}
+            onBulkDelete={handleBulkDelete}
+            onBulkExport={handleBulkExport}
+            loading={isLoading}
+          />
+        </div>
+      )}
     </div>
   );
 }
