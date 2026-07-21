@@ -111,6 +111,13 @@ The backend provides a secure, token-based (JWT) API.
 - `POST /auth/refresh` - Refresh an expired access token.
 - `GET /auth/me` - Retrieve current authenticated user profile.
 
+**Patient Management:**
+- `POST /patients` - Create a new patient record.
+- `GET /patients` - List all patients (supports `search`, `skip`, and `limit`).
+- `GET /patients/{id}` - Retrieve a specific patient record.
+- `PUT /patients/{id}` - Update a specific patient's details.
+- `DELETE /patients/{id}` - Soft delete a patient record.
+
 ## Project Architecture Overview
 
 The application follows a modular, component-driven architecture. 
