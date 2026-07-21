@@ -310,7 +310,7 @@ function NotifItem({ notif, onRead }: { notif: Notification; onRead: () => void 
           {notif.message}
         </p>
         <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
-          {formatDate(notif.timestamp, 'relative')}
+          {formatDate(notif.createdAt, 'relative')}
         </p>
       </div>
     </div>
