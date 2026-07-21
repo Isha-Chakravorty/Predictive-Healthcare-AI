@@ -97,7 +97,52 @@ export interface Patient {
   createdAt: string;
   updatedAt: string;
   vitalSigns: VitalSigns;
+  labReports?: LabReport[];
+  lifestyle?: LifestyleData;
+  medicalHistory?: MedicalHistory;
+  familyHistory?: string[];
+  healthScore?: number;
+  doctorNotes?: DoctorNote[];
+  documents?: Document[];
   notes?: string;
+}
+
+export interface LabReport {
+  id: string;
+  testName: string;
+  date: string;
+  result: string;
+  status: 'normal' | 'abnormal' | 'critical';
+  unit: string;
+  referenceRange: string;
+}
+
+export interface LifestyleData {
+  smokingStatus: 'never' | 'former' | 'current';
+  alcoholConsumption: 'none' | 'light' | 'moderate' | 'heavy';
+  physicalActivity: 'sedentary' | 'light' | 'moderate' | 'active';
+  diet: string;
+}
+
+export interface MedicalHistory {
+  pastSurgeries: string[];
+  chronicDiseases: string[];
+  allergies: string[];
+}
+
+export interface DoctorNote {
+  id: string;
+  date: string;
+  doctorName: string;
+  note: string;
+}
+
+export interface Document {
+  id: string;
+  title: string;
+  type: string;
+  uploadDate: string;
+  url: string;
 }
 
 export interface PatientAddress {
