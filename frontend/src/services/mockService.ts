@@ -1,4 +1,4 @@
-import type { Patient, PaginatedResponse, ApiResponse } from '../types';
+import type { Patient, PaginatedResponse, ApiResponse, AnalyticsMetrics } from '../types';
 import {
   mockPatients,
   mockDashboardStats,
@@ -158,7 +158,7 @@ export const predictionService = {
 export const analyticsService = {
   async getMetrics() {
     await delay(400);
-    return { data: mockAnalyticsData, message: 'Success', success: true };
+    return { data: mockAnalyticsData as AnalyticsMetrics, message: 'Success', success: true };
   },
 
   async getPredictionTrend() {

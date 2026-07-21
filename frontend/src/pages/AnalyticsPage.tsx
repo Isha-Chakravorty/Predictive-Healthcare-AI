@@ -6,12 +6,14 @@ import {
   Tooltip, Legend, Filler,
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import { BarChart3, TrendingUp, Users, Brain, Download, Calendar } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, Brain, Download, Lightbulb, Activity, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Input';
 import { ChartSkeleton, StatCardSkeleton } from '../components/ui/Skeleton';
 import { analyticsService } from '../services/mockService';
-import { CHART_COLORS } from '../constants';
+import { CHART_COLORS, DISEASE_LABELS } from '../constants';
+import type { AnalyticsMetrics } from '../types';
+import { useToast } from '../context/ToastContext';
 
 ChartJS.register(
   CategoryScale, LinearScale, PointElement, LineElement,
@@ -30,75 +32,63 @@ const baseChartOptions = {
 
 export function AnalyticsPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const [period, setPeriod] = useState('7m');
-  const [data, setData] = useState<{
-    predictions: { date: string; value: number }[];
-    patients: { date: string; value: number }[];
-    accuracy: { date: string; value: number }[];
-    diseases: { disease: string; count: number; color: string }[];
-    risks: { label: string; value: number; color: string }[];
-    ages: { label: string; value: number }[];
-  } | null>(null);
+  const [period, setPeriod] = useState('12m');
+  const [data, setData] = useState<AnalyticsMetrics | null>(null);
+  const { success } = useToast();
 
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
-      const [pred, pat, acc, dis, risk, age] = await Promise.all([
-        analyticsService.getPredictionTrend(),
-        analyticsService.getPatientGrowth(),
-        analyticsService.getAccuracyTrend(),
-        analyticsService.getDiseaseDistribution(),
-        analyticsService.getRiskDistribution(),
-        analyticsService.getAgeDistribution(),
-      ]);
-      setData({
-        predictions: pred.data,
-        patients: pat.data,
-        accuracy: acc.data,
-        diseases: dis.data,
-        risks: risk.data,
-        ages: age.data,
-      });
+      const res = await analyticsService.getMetrics();
+      if (res.data) {
+        setData(res.data);
+      }
       setIsLoading(false);
     };
     load();
   }, [period]);
 
-  const kpiCards = data
-    ? [
-        { label: 'Total Predictions',  value: data.predictions.reduce((s, d) => s + d.value, 0).toLocaleString(), icon: <Brain size={18} />, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/20' },
-        { label: 'New Patients',        value: data.patients.reduce((s, d) => s + d.value, 0).toLocaleString(), icon: <Users size={18} />, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-        { label: 'Avg. Accuracy',       value: `${(data.accuracy.reduce((s, d) => s + d.value, 0) / data.accuracy.length).toFixed(1)}%`, icon: <TrendingUp size={18} />, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
-        { label: 'High Risk Cases',     value: data.risks.find(r => r.label === 'High Risk')?.value.toString() ?? '-', icon: <BarChart3 size={18} />, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20' },
-      ]
-    : [];
+  const handleExport = (type: string) => {
+    success(`${type} Export Started`, 'Your file is being generated and will download shortly.');
+  };
+
+  const totalPredictions = data?.monthlyTrends.reduce((sum, t) => sum + t.predictions, 0) || 0;
+  const totalHighRisk = data?.monthlyTrends.reduce((sum, t) => sum + t.highRisk, 0) || 0;
+  const avgHighRiskRate = totalPredictions > 0 ? ((totalHighRisk / totalPredictions) * 100).toFixed(1) : 0;
+
+  const kpiCards = [
+    { label: 'Total Predictions (YTD)', value: totalPredictions.toLocaleString(), icon: <Brain size={18} />, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+    { label: 'High Risk Cases', value: totalHighRisk.toLocaleString(), icon: <Activity size={18} />, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20' },
+    { label: 'Avg High Risk Rate', value: `${avgHighRiskRate}%`, icon: <TrendingUp size={18} />, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/20' },
+    { label: 'Total Patients Analyzed', value: data?.demographics.gender.reduce((s, g) => s + g.count, 0).toLocaleString() || 0, icon: <Users size={18} />, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+  ];
 
   return (
     <div className="space-y-6 max-w-[1400px]">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
             <BarChart3 size={24} className="text-blue-600 dark:text-blue-400" />
-            Analytics
+            Healthcare Analytics
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
-            Comprehensive platform metrics and trends
+            Enterprise clinical insights and AI prediction trends
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Select
             options={[
-              { value: '7m', label: 'Last 7 Months' },
+              { value: '12m', label: 'Last 12 Months' },
+              { value: '6m', label: 'Last 6 Months' },
               { value: '3m', label: 'Last 3 Months' },
-              { value: '1y', label: 'Last Year' },
             ]}
             value={period}
             onChange={e => setPeriod(e.target.value)}
             containerClassName="w-44"
           />
-          <Button variant="outline" size="sm" leftIcon={<Download size={14} />}>
-            Export
+          <Button variant="outline" size="sm" leftIcon={<Download size={14} />} onClick={() => handleExport('PDF Report')}>
+            Export Report
           </Button>
         </div>
       </div>
@@ -113,7 +103,7 @@ export function AnalyticsPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
-                className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5"
+                className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm"
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{card.label}</span>
@@ -124,167 +114,152 @@ export function AnalyticsPage() {
             ))}
       </div>
 
-      {/* Charts — Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {isLoading ? (
-          <><ChartSkeleton height={300} /><ChartSkeleton height={300} /></>
-        ) : (
-          <>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">Prediction Volume</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Monthly predictions run</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Main Trend Chart */}
+        <div className="lg:col-span-2 space-y-6">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">Prediction Volume & Risk Trends</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Total vs High Risk predictions over time</p>
+            {isLoading ? <ChartSkeleton height={300} /> : (
+              <div style={{ height: 320 }}>
+                <Line
+                  data={{
+                    labels: data?.monthlyTrends.map(t => t.month) || [],
+                    datasets: [
+                      {
+                        label: 'Total Predictions',
+                        data: data?.monthlyTrends.map(t => t.predictions) || [],
+                        borderColor: CHART_COLORS.primary,
+                        backgroundColor: `${CHART_COLORS.primary}15`,
+                        fill: true,
+                        tension: 0.4,
+                      },
+                      {
+                        label: 'High Risk Cases',
+                        data: data?.monthlyTrends.map(t => t.highRisk) || [],
+                        borderColor: CHART_COLORS.danger,
+                        backgroundColor: 'transparent',
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                      }
+                    ],
+                  }}
+                  options={{ ...baseChartOptions, plugins: { legend: { position: 'top' } } }}
+                />
+              </div>
+            )}
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-4">Age Distribution</h3>
+              {isLoading ? <ChartSkeleton height={200} /> : (
+                <div style={{ height: 220 }}>
+                  <Bar
+                    data={{
+                      labels: data?.demographics.ageGroups.map(a => a.group) || [],
+                      datasets: [{
+                        label: 'Patients',
+                        data: data?.demographics.ageGroups.map(a => a.count) || [],
+                        backgroundColor: `${CHART_COLORS.secondary}cc`,
+                        borderRadius: 4,
+                      }],
+                    }}
+                    options={{ ...baseChartOptions, plugins: { legend: { display: false } } }}
+                  />
+                </div>
+              )}
+            </motion.div>
+            
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-4">Gender Distribution</h3>
+              {isLoading ? <ChartSkeleton height={200} /> : (
+                <div style={{ height: 220 }} className="flex justify-center relative">
+                  <Doughnut
+                    data={{
+                      labels: data?.demographics.gender.map(g => g.gender) || [],
+                      datasets: [{
+                        data: data?.demographics.gender.map(g => g.count) || [],
+                        backgroundColor: [CHART_COLORS.primary, CHART_COLORS.purple],
+                        borderWidth: 0,
+                      }],
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      cutout: '70%',
+                      plugins: { legend: { position: 'bottom' } },
+                    }}
+                  />
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}
+            className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <Lightbulb size={18} className="text-amber-500" />
+              Key Insights
+            </h3>
+            <div className="space-y-4">
+              {isLoading ? (
+                Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-12 bg-slate-100 dark:bg-slate-700 rounded-lg animate-pulse" />)
+              ) : (
+                data?.insights.map((insight, i) => {
+                  const Icon = insight.trend === 'up' ? ArrowUpRight : insight.trend === 'down' ? ArrowDownRight : Minus;
+                  const color = insight.type === 'warning' ? 'text-red-500 bg-red-50 dark:bg-red-900/20' 
+                              : insight.type === 'success' ? 'text-green-500 bg-green-50 dark:bg-green-900/20'
+                              : 'text-blue-500 bg-blue-50 dark:bg-blue-900/20';
+                  return (
+                    <div key={i} className="flex gap-3 items-start">
+                      <div className={`p-1.5 rounded-md shrink-0 mt-0.5 ${color}`}>
+                        <Icon size={14} />
+                      </div>
+                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-snug">
+                        {insight.text}
+                      </p>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.45 }}
+            className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">Disease Distribution</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Frequency of predictions by disease type</p>
+            {isLoading ? <ChartSkeleton height={200} /> : (
               <div style={{ height: 260 }}>
                 <Bar
                   data={{
-                    labels: data!.predictions.map(d => d.date),
+                    labels: data?.diseaseDistribution.map(d => DISEASE_LABELS[d.disease] || d.disease) || [],
                     datasets: [{
-                      label: 'Predictions',
-                      data: data!.predictions.map(d => d.value),
-                      backgroundColor: `${CHART_COLORS.primary}cc`,
-                      borderRadius: 6,
-                      borderSkipped: false,
-                    }],
-                  }}
-                  options={{ ...baseChartOptions, plugins: { legend: { display: false } } }}
-                />
-              </div>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">Model Accuracy Trend</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Weekly accuracy over time</p>
-              <div style={{ height: 260 }}>
-                <Line
-                  data={{
-                    labels: data!.accuracy.map(d => d.date),
-                    datasets: [{
-                      label: 'Accuracy %',
-                      data: data!.accuracy.map(d => d.value),
-                      borderColor: CHART_COLORS.success,
-                      backgroundColor: `${CHART_COLORS.success}15`,
-                      fill: true,
-                      tension: 0.4,
-                      pointRadius: 5,
-                      pointBackgroundColor: CHART_COLORS.success,
-                      borderWidth: 2.5,
+                      label: 'Cases',
+                      data: data?.diseaseDistribution.map(d => d.count) || [],
+                      backgroundColor: `${CHART_COLORS.warning}cc`,
+                      borderRadius: 4,
                     }],
                   }}
                   options={{
                     ...baseChartOptions,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                      ...baseChartOptions.scales,
-                      y: { ...baseChartOptions.scales.y, min: 88, max: 98 },
-                    },
-                  }}
-                />
-              </div>
-            </motion.div>
-          </>
-        )}
-      </div>
-
-      {/* Charts — Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {isLoading ? (
-          <><ChartSkeleton height={300} /><ChartSkeleton height={300} /><ChartSkeleton height={300} /></>
-        ) : (
-          <>
-            {/* Patient growth */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">Patient Growth</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">New registrations by month</p>
-              <div style={{ height: 220 }}>
-                <Line
-                  data={{
-                    labels: data!.patients.map(d => d.date),
-                    datasets: [{
-                      label: 'Patients',
-                      data: data!.patients.map(d => d.value),
-                      borderColor: CHART_COLORS.secondary,
-                      backgroundColor: `${CHART_COLORS.secondary}15`,
-                      fill: true,
-                      tension: 0.4,
-                      pointRadius: 4,
-                      borderWidth: 2,
-                    }],
-                  }}
-                  options={{ ...baseChartOptions, plugins: { legend: { display: false } } }}
-                />
-              </div>
-            </motion.div>
-
-            {/* Disease distribution */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
-              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">Disease Mix</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Prediction by disease type</p>
-              <div style={{ height: 180 }}>
-                <Doughnut
-                  data={{
-                    labels: data!.diseases.map(d => d.disease),
-                    datasets: [{
-                      data: data!.diseases.map(d => d.count),
-                      backgroundColor: data!.diseases.map(d => d.color),
-                      borderWidth: 0,
-                    }],
-                  }}
-                  options={{
-                    responsive: true, maintainAspectRatio: false,
-                    cutout: '65%',
+                    indexAxis: 'y',
                     plugins: { legend: { display: false } },
                   }}
                 />
               </div>
-              <div className="mt-3 space-y-1.5">
-                {data!.diseases.slice(0, 4).map(d => (
-                  <div key={d.disease} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
-                      <span className="text-slate-600 dark:text-slate-400">{d.disease}</span>
-                    </div>
-                    <span className="font-semibold text-slate-700 dark:text-slate-300">
-                      {((d.count / data!.diseases.reduce((s: number, x: { count: number }) => s + x.count, 0)) * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+            )}
+          </motion.div>
+        </div>
 
-            {/* Risk distribution */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
-              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">Risk Distribution</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Patient risk levels</p>
-              <div className="space-y-3 mt-2">
-                {data!.risks.map(r => {
-                  const total = data!.risks.reduce((s, d) => s + d.value, 0);
-                  const pct = ((r.value / total) * 100).toFixed(1);
-                  return (
-                    <div key={r.label}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-600 dark:text-slate-400">{r.label}</span>
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">{r.value} ({pct}%)</span>
-                      </div>
-                      <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${pct}%` }}
-                          transition={{ duration: 0.8, delay: 0.5 }}
-                          className="h-full rounded-full"
-                          style={{ backgroundColor: r.color }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          </>
-        )}
       </div>
     </div>
   );
