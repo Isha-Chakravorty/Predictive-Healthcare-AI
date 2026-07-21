@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -74,7 +74,7 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export const Sidebar = memo(function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const location = useLocation();
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['Predictions']);
 
@@ -196,7 +196,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </motion.aside>
     </>
   );
-}
+});
 
 // ============================================================
 // Individual Nav Item

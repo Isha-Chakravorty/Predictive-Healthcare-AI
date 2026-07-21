@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, memo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -26,7 +26,7 @@ interface NavbarProps {
   sidebarCollapsed: boolean;
 }
 
-export function Navbar({ onMenuToggle, sidebarCollapsed }: NavbarProps) {
+export const Navbar = memo(function Navbar({ onMenuToggle, sidebarCollapsed }: NavbarProps) {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const { success } = useToast();
@@ -258,7 +258,7 @@ export function Navbar({ onMenuToggle, sidebarCollapsed }: NavbarProps) {
       </div>
     </header>
   );
-}
+});
 
 function MenuButton({
   icon,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sidebar } from '../components/layout/Sidebar';
@@ -13,13 +13,13 @@ export function AppLayout() {
     return stored === 'true';
   });
 
-  const toggleSidebar = () => {
+  const toggleSidebar = useCallback(() => {
     setSidebarCollapsed(prev => {
       const next = !prev;
       localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(next));
       return next;
     });
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex">

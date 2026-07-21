@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, memo } from 'react';
 import { Search, ChevronDown, ChevronUp, Columns, Download, Trash2, Filter, Settings, FileSpreadsheet } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './Button';
@@ -22,7 +22,7 @@ interface AdvancedTableProps<T> {
   loading?: boolean;
 }
 
-export function AdvancedTable<T extends { id: string | number }>({
+function AdvancedTableInner<T extends { id: string | number }>({
   data,
   columns,
   onRowClick,
@@ -318,3 +318,6 @@ export function AdvancedTable<T extends { id: string | number }>({
     </div>
   );
 }
+
+// Ensure generic types are preserved with memo
+export const AdvancedTable = memo(AdvancedTableInner) as typeof AdvancedTableInner;
