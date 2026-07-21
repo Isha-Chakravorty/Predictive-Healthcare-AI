@@ -125,6 +125,13 @@ The backend provides a secure, token-based (JWT) API.
 - `GET /predictions/{id}` - Retrieve detailed prediction results and AI explanations.
 - `DELETE /predictions/{id}` - Remove a prediction record.
 
+**Analytics Dashboard:**
+- `GET /analytics/dashboard` - Retrieve high-level KPI metrics (total patients, risk aggregations).
+- `GET /analytics/diseases` - Retrieve prediction distribution and average confidence statistics by disease.
+- `GET /analytics/trends` - Retrieve daily, weekly, and monthly time-series prediction counts.
+- `GET /analytics/patients` - Retrieve demographic distribution (Age, Gender, BMI).
+- `GET /analytics/recent` - Fetch the most recently registered patients and latest predictions.
+
 ## Project Architecture Overview
 
 The application follows a modular, component-driven architecture. 
