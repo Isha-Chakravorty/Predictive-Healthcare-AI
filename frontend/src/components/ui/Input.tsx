@@ -115,6 +115,7 @@ export function PasswordInput(props: PasswordInputProps) {
       rightIcon={
         <button
           type="button"
+          aria-label={show ? 'Hide password' : 'Show password'}
           onClick={() => setShow(s => !s)}
           className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
         >

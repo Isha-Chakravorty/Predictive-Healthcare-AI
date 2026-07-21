@@ -28,5 +28,18 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     cssMinify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'react-vendor';
+            if (id.includes('framer-motion') || id.includes('lucide-react') || id.includes('react-icons')) return 'ui-vendor';
+            if (id.includes('chart.js') || id.includes('react-chartjs-2')) return 'chart-vendor';
+            if (id.includes('react-hook-form') || id.includes('zod')) return 'form-vendor';
+            return 'vendor';
+          }
+        },
+      },
+    },
   },
 })

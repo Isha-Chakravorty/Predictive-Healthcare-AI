@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   Users, Brain, TrendingUp, AlertTriangle,
@@ -49,7 +49,7 @@ export function DashboardPage() {
     load();
   }, []);
 
-  const statCards = stats
+  const statCards = useMemo(() => stats
     ? [
         { title: 'Total Patients', value: stats.totalPatients.toLocaleString(), change: 4.2, changeType: 'increase' as const, icon: <Users size={20} />, iconBg: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400', subtitle: `${stats.newPatientsThisWeek} new this week` },
         { title: 'High Risk Patients', value: stats.highRiskPatients?.toLocaleString() ?? 482, change: -2.1, changeType: 'decrease' as const, icon: <AlertTriangle size={20} />, iconBg: 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400', subtitle: 'Requires monitoring' },
@@ -58,7 +58,7 @@ export function DashboardPage() {
         { title: 'Avg Risk Score', value: `${stats.avgRiskScore ?? 42}`, change: -1.2, changeType: 'decrease' as const, icon: <TrendingUp size={20} />, iconBg: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400', subtitle: 'Across all cohorts' },
         { title: 'Monthly Predictions', value: stats.monthlyPredictions?.toLocaleString() ?? 1240, change: 18.2, changeType: 'increase' as const, icon: <Brain size={20} />, iconBg: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400', subtitle: '30-day volume' },
       ]
-    : [];
+    : [], [stats]);
 
   const activitySeverityIcon: Record<string, string> = {
     error: '🔴', warning: '🟡', success: '🟢', info: '🔵',

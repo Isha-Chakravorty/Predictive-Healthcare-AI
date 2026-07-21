@@ -149,6 +149,7 @@ function AdvancedTableInner<T extends { id: string | number }>({
           <input
             type="text"
             placeholder="Search all columns..."
+            aria-label="Search all columns"
             className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all dark:text-slate-200"
             value={globalSearch}
             onChange={e => { setGlobalSearch(e.target.value); setPage(1); }}
@@ -185,7 +186,14 @@ function AdvancedTableInner<T extends { id: string | number }>({
           <Button variant="outline" size="sm" leftIcon={<Download size={14} />} onClick={handleExportCSV}>CSV</Button>
           
           <div className="relative">
-            <Button variant="outline" size="sm" leftIcon={<Columns size={14} />} onClick={() => setShowColumnToggle(!showColumnToggle)}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              leftIcon={<Columns size={14} />} 
+              onClick={() => setShowColumnToggle(!showColumnToggle)}
+              aria-haspopup="true"
+              aria-expanded={showColumnToggle}
+            >
               Columns
             </Button>
             {showColumnToggle && (
@@ -222,6 +230,7 @@ function AdvancedTableInner<T extends { id: string | number }>({
               <th className="px-4 py-3 w-12 sticky left-0 bg-slate-50 dark:bg-slate-900/80 z-20">
                 <input 
                   type="checkbox" 
+                  aria-label="Select all rows"
                   className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   checked={paginatedData.length > 0 && selectedIds.size === paginatedData.length}
                   onChange={toggleSelectAll}
