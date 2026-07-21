@@ -9,6 +9,9 @@ import { ROUTES } from '../constants';
 // Lazy load all pages for code splitting
 const DashboardPage        = lazy(() => import('../pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
 const PatientsPage         = lazy(() => import('../pages/PatientsPage').then(m => ({ default: m.PatientsPage })));
+const PatientProfilePage   = lazy(() => import('../pages/PatientProfilePage').then(m => ({ default: m.PatientProfilePage })));
+const AddPatientPage       = lazy(() => import('../pages/AddPatientPage').then(m => ({ default: m.AddPatientPage })));
+const EditPatientPage      = lazy(() => import('../pages/EditPatientPage').then(m => ({ default: m.EditPatientPage })));
 const PredictionPage       = lazy(() => import('../pages/PredictionPage').then(m => ({ default: m.PredictionPage })));
 const PredictionHistoryPage= lazy(() => import('../pages/PredictionHistoryPage').then(m => ({ default: m.PredictionHistoryPage })));
 const AnalyticsPage        = lazy(() => import('../pages/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
@@ -42,6 +45,18 @@ const router = createBrowserRouter([
       {
         path: ROUTES.PATIENTS,
         element: <PageWrapper><PatientsPage /></PageWrapper>,
+      },
+      {
+        path: ROUTES.PATIENT_NEW,
+        element: <PageWrapper><AddPatientPage /></PageWrapper>,
+      },
+      {
+        path: ROUTES.PATIENT_DETAIL,
+        element: <PageWrapper><PatientProfilePage /></PageWrapper>,
+      },
+      {
+        path: ROUTES.PATIENT_EDIT,
+        element: <PageWrapper><EditPatientPage /></PageWrapper>,
       },
       {
         path: ROUTES.PREDICTION,
