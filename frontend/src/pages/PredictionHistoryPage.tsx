@@ -254,7 +254,7 @@ export function PredictionHistoryPage() {
                       {selected.result.recommendations.map((rec, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
                           <span className="text-blue-500 mt-0.5 shrink-0">→</span>
-                          {rec}
+                          {typeof rec === 'string' ? rec : rec.text}
                         </li>
                       ))}
                     </ul>
