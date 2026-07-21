@@ -27,6 +27,7 @@ const ResetPasswordPage    = lazy(() => import('../pages/ResetPasswordPage').the
 const VerifyEmailPage      = lazy(() => import('../pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 const TwoFactorAuthPage    = lazy(() => import('../pages/TwoFactorAuthPage').then(m => ({ default: m.TwoFactorAuthPage })));
 const SessionExpiredPage   = lazy(() => import('../pages/SessionExpiredPage').then(m => ({ default: m.SessionExpiredPage })));
+const HelpCenterPage       = lazy(() => import('../pages/HelpCenterPage').then(m => ({ default: m.HelpCenterPage })));
 const NotFoundPage         = lazy(() => import('../pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
 const PageWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -95,6 +96,10 @@ const router = createBrowserRouter([
       {
         path: ROUTES.PROFILE,
         element: <PageWrapper><ProfilePage /></PageWrapper>,
+      },
+      {
+        path: ROUTES.HELP_CENTER,
+        element: <PageWrapper><HelpCenterPage /></PageWrapper>,
       },
     ],
   },
