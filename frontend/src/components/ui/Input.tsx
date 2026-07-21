@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState, useId } from 'react';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 // ============================================================
@@ -36,7 +36,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const inputId = id || `input-${Math.random().toString(36).slice(2, 7)}`;
+    const defaultId = useId();
+    const inputId = id || defaultId;
 
     return (
       <div className={`w-full ${containerClassName}`}>
@@ -100,7 +101,7 @@ Input.displayName = 'Input';
 // ============================================================
 // Password Input (toggle visibility)
 // ============================================================
-interface PasswordInputProps extends Omit<InputProps, 'type'> {}
+type PasswordInputProps = Omit<InputProps, 'type'>;
 
 export function PasswordInput(props: PasswordInputProps) {
   const [show, setShow] = React.useState(false);
@@ -134,7 +135,8 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, hint, containerClassName = '', className = '', id, ...props }, ref) => {
-    const inputId = id || `ta-${Math.random().toString(36).slice(2, 7)}`;
+    const defaultId = useId();
+    const inputId = id || defaultId;
     return (
       <div className={`w-full ${containerClassName}`}>
         {label && (
@@ -196,7 +198,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     { label, error, hint, options, placeholder, containerClassName = '', className = '', id, ...props },
     ref
   ) => {
-    const inputId = id || `sel-${Math.random().toString(36).slice(2, 7)}`;
+    const defaultId = useId();
+    const inputId = id || defaultId;
     return (
       <div className={`w-full ${containerClassName}`}>
         {label && (
@@ -262,7 +265,8 @@ interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ({ label, description, error, className = '', id, ...props }, ref) => {
-    const inputId = id || `chk-${Math.random().toString(36).slice(2, 7)}`;
+    const defaultId = useId();
+    const inputId = id || defaultId;
     return (
       <div className="flex items-start gap-3">
         <div className="flex items-center h-5 mt-0.5">

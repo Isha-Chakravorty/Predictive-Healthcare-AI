@@ -200,6 +200,11 @@ export interface DashboardStats {
   newPatientsThisWeek: number;
   avgConfidenceScore: number;
   tasksCompleted: number;
+  highRiskPatients?: number;
+  diabetesPredictions?: number;
+  heartDiseasePredictions?: number;
+  avgRiskScore?: number;
+  monthlyPredictions?: number;
 }
 
 export interface StatCard {
