@@ -64,10 +64,15 @@ def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
         user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exception
+        import uuid
+        try:
+            user_uuid = uuid.UUID(user_id)
+        except ValueError:
+            raise credentials_exception
     except JWTError:
         raise credentials_exception
         
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.id == user_uuid).first()
     if not user or not user.is_active:
         raise credentials_exception
         

@@ -26,6 +26,12 @@ Predictive Healthcare AI aims to empower clinicians and medical professionals wi
 - **Data Visualization:** Chart.js + react-chartjs-2
 - **Icons & Animations:** Lucide React, Framer Motion
 
+### Backend
+- **Framework:** FastAPI (Python)
+- **Database:** SQLite (Development) / PostgreSQL (Production)
+- **ORM & Migrations:** SQLAlchemy 2.0 & Alembic
+- **Authentication:** JWT (python-jose) & bcrypt (passlib)
+
 ## Folder Structure
 
 ```
@@ -94,6 +100,16 @@ This will generate the built assets in the `frontend/dist` directory. You can pr
 ```bash
 npm run preview
 ```
+
+### Backend API Endpoints
+
+The backend provides a secure, token-based (JWT) API.
+
+**Authentication:**
+- `POST /auth/register` - Create a new user account (Doctor/Admin).
+- `POST /auth/login` - Authenticate and retrieve access/refresh tokens.
+- `POST /auth/refresh` - Refresh an expired access token.
+- `GET /auth/me` - Retrieve current authenticated user profile.
 
 ## Project Architecture Overview
 
