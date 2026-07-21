@@ -132,8 +132,14 @@ The backend provides a secure, token-based (JWT) API.
 - `GET /analytics/patients` - Retrieve demographic distribution (Age, Gender, BMI).
 - `GET /analytics/recent` - Fetch the most recently registered patients and latest predictions.
 
-**Machine Learning Pipeline:**
-Located in `backend/ml/`, the offline ML pipeline is designed to securely train, evaluate, and export predictive algorithms (Logistic Regression, Decision Trees) utilizing standard clinical datasets (Diabetes, Heart Disease). These generated `.joblib` artifacts are primed for seamless integration into the FastAPI routing layer.
+**Machine Learning Pipeline & Integration:**
+Located in `backend/ml/`, the offline ML pipeline trains and exports predictive algorithms (Logistic Regression, Decision Trees) using clinical datasets. These `.joblib` models are actively integrated into the FastAPI application via an `MLService` singleton loaded exactly once during the application lifespan. 
+
+When a client hits `POST /predictions`, the application automatically:
+1. Detects the target disease (Diabetes vs Heart Disease) dynamically by inspecting the provided `input_features` keys.
+2. Formats and scales the input using the serialized `sklearn` pipeline.
+3. Computes the probability and categorizes it into a discrete **Risk Level** (Low: 0-0.3, Medium: 0.31-0.70, High: 0.71-1.0).
+4. Derives native, zero-latency **Explainability** by tracing the model coefficients (for Linear models) or feature importances (for Trees) to inform the user exactly which factors influenced the prediction.
 
 ## Project Architecture Overview
 

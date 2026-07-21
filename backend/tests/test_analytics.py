@@ -35,7 +35,16 @@ def test_analytics_populated_database(client: TestClient):
         "/predictions",
         json={
             "patient_id": patient["id"],
-            "input_features": {"glucose": 110}
+            "input_features": {
+                "Pregnancies": 1,
+                "Glucose": 110,
+                "BloodPressure": 70,
+                "SkinThickness": 20,
+                "Insulin": 79,
+                "BMI": 26.0,
+                "DiabetesPedigreeFunction": 0.5,
+                "Age": 45
+            }
         },
         headers=headers
     )
