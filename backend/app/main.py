@@ -3,11 +3,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.api.endpoints import auth, patients, predictions, analytics
 from app.ml.service import ml_service
+from app.core.logging import setup_logging
+import logging
+
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    setup_logging()
+    logger.info("Application starting up...")
     ml_service.load_models()
     yield
+    logger.info("Application shutting down...")
 
 app = FastAPI(
     title="Predictive Healthcare AI API",

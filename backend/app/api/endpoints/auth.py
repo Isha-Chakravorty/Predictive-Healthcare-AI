@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
+import logging
 from app.api.dependencies import get_db, get_current_user
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token
 from app.core.config import settings
@@ -8,12 +9,15 @@ from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse
 from app.schemas.auth import LoginRequest, Token, RefreshRequest
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == user_in.email).first()
     if user:
+        logger.warning(f"Registration failed: Email {user_in.email} already exists.")
         raise HTTPException(
             status_code=400,
             detail="The user with this email already exists in the system.",
@@ -27,20 +31,24 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+    logger.info(f"Successfully registered user: {user.email}")
     return user
 
 @router.post("/login", response_model=Token)
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == request.email).first()
     if not user or not verify_password(request.password, user.hashed_password):
+        logger.warning(f"Login failed: Incorrect email or password for {request.email}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not user.is_active:
+        logger.warning(f"Login failed: User {request.email} is inactive")
         raise HTTPException(status_code=400, detail="Inactive user")
         
+    logger.info(f"User {user.email} logged in successfully")
     return {
         "access_token": create_access_token(user.id),
         "refresh_token": create_refresh_token(user.id),
