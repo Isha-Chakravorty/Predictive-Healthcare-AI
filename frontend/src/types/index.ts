@@ -222,15 +222,34 @@ export interface PredictionResult {
   riskFactors: Array<{
     factor: string;
     impact: 'low' | 'medium' | 'high';
-    value: string;
+    value: string | number;
     normalRange: string;
   }>;
-  recommendations: PredictionRecommendation[];
-  insights: PredictionInsight[];
+  recommendations?: PredictionRecommendation[];
+  insights?: PredictionInsight[];
   followUpRequired: boolean;
-  urgency: 'routine' | 'soon' | 'urgent' | 'emergency';
+  urgency?: 'routine' | 'soon' | 'urgent';
   estimatedSeverity?: 'mild' | 'moderate' | 'severe';
   overallHealthScore?: number;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'alert' | 'warning' | 'info' | 'success';
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface AnalyticsMetrics {
+  monthlyTrends: { month: string; predictions: number; highRisk: number }[];
+  diseaseDistribution: { disease: string; count: number }[];
+  demographics: {
+    ageGroups: { group: string; count: number }[];
+    gender: { gender: string; count: number }[];
+  };
+  insights: { text: string; trend: 'up' | 'down' | 'neutral'; type: 'warning' | 'info' | 'success' }[];
 }
 
 export interface PredictionRecommendation {

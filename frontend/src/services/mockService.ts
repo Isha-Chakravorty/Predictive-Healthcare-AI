@@ -12,6 +12,7 @@ import {
   mockRiskDistribution,
   mockAccuracyTrend,
   mockAgeDistribution,
+  mockAnalyticsData,
 } from '../mock';
 
 // Simulate network delay
@@ -155,6 +156,11 @@ export const predictionService = {
 // Analytics Service
 // ============================================================
 export const analyticsService = {
+  async getMetrics() {
+    await delay(400);
+    return { data: mockAnalyticsData, message: 'Success', success: true };
+  },
+
   async getPredictionTrend() {
     await delay(300);
     return { data: mockPredictionTrend, message: 'Success', success: true };

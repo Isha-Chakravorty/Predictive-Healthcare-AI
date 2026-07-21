@@ -9,7 +9,9 @@ const firstNames = ['James', 'Maria', 'David', 'Emily', 'Robert', 'Patricia', 'M
 const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson'];
 const diseases = ['diabetes', 'heart_disease', 'stroke', 'kidney_disease', 'hypertension', 'cancer_risk', 'pneumonia', 'alzheimers', 'liver_disease'];
 const riskLevels = ['low', 'moderate', 'high', 'critical'];
-const doctors = ['Dr. Sarah Mitchell', 'Dr. James Chen', 'Dr. Lisa Park', 'Dr. Robert King', 'Dr. Emily Carter', 'Dr. David Foster'];
+
+// 50+ Mock Doctors
+const doctors = Array.from({ length: 55 }, (_, i) => `Dr. ${getRandomItem(firstNames)} ${getRandomItem(lastNames)}`);
 
 function getRandomItem(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -103,7 +105,7 @@ for (let i = 1; i <= 300; i++) {
 }
 
 const predictions = [];
-for (let i = 1; i <= 550; i++) {
+for (let i = 1; i <= 1050; i++) {
   const patient = getRandomItem(patients);
   const disease = getRandomItem(diseases);
   const risk = getRandomItem(riskLevels);
@@ -180,10 +182,57 @@ for (let i = 1; i <= 50; i++) {
   });
 }
 
+// Notifications
+const notifications = [];
+for (let i = 1; i <= 25; i++) {
+  const type = getRandomItem(['alert', 'warning', 'info', 'success']);
+  notifications.push({
+    id: `notif_${i.toString().padStart(3, '0')}`,
+    title: type === 'alert' ? 'High Risk Patient Alert' : type === 'warning' ? 'Critical Value Detected' : type === 'success' ? 'Prediction Completed' : 'System Update',
+    message: type === 'alert' ? `Patient ${getRandomItem(lastNames)} requires immediate review.` : `New data analyzed successfully.`,
+    type,
+    isRead: Math.random() > 0.4,
+    createdAt: new Date(Date.now() - getRandomInt(0, 10) * 86400000).toISOString(),
+  });
+}
+
+// Analytics Metrics
+const analyticsMetrics = {
+  monthlyTrends: Array.from({ length: 12 }, (_, i) => ({
+    month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
+    predictions: getRandomInt(200, 800),
+    highRisk: getRandomInt(50, 200),
+  })),
+  diseaseDistribution: diseases.map(d => ({
+    disease: d,
+    count: getRandomInt(50, 300)
+  })),
+  demographics: {
+    ageGroups: [
+      { group: '18-30', count: getRandomInt(100, 300) },
+      { group: '31-45', count: getRandomInt(200, 500) },
+      { group: '46-60', count: getRandomInt(300, 800) },
+      { group: '60+', count: getRandomInt(400, 1000) }
+    ],
+    gender: [
+      { gender: 'Male', count: getRandomInt(400, 600) },
+      { gender: 'Female', count: getRandomInt(450, 650) }
+    ]
+  },
+  insights: [
+    { text: 'High diabetes risk increased this month by 12%.', trend: 'up', type: 'warning' },
+    { text: 'Heart disease risk decreased by 8% overall.', trend: 'down', type: 'success' },
+    { text: 'Most affected age group is 45-60 across all models.', trend: 'neutral', type: 'info' },
+    { text: 'Patients with obesity show 3x higher diabetes probability.', trend: 'up', type: 'warning' },
+  ]
+};
+
 const fileContent = `// THIS FILE IS AUTO-GENERATED. DO NOT EDIT DIRECTLY.
 export const generatedPatients = ${JSON.stringify(patients, null, 2)};
 export const generatedPredictions = ${JSON.stringify(predictions, null, 2)};
 export const generatedCheckups = ${JSON.stringify(checkups, null, 2)};
+export const generatedNotifications = ${JSON.stringify(notifications, null, 2)};
+export const generatedAnalytics = ${JSON.stringify(analyticsMetrics, null, 2)};
 `;
 
 fs.writeFileSync(path.join(__dirname, 'src/mock/generated.ts'), fileContent, 'utf-8');

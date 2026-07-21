@@ -9,7 +9,13 @@ import type {
   DiseaseDistribution,
   User,
 } from '../types';
-import { generatedPatients, generatedPredictions, generatedCheckups, generatedDashboardStats } from './generated';
+import { 
+  generatedPatients, 
+  generatedPredictions, 
+  generatedCheckups,
+  generatedNotifications,
+  generatedAnalytics
+} from './generated';
 
 // ============================================================
 // Mock User Data
@@ -44,12 +50,26 @@ export const mockUser: User = {
 // ============================================================
 // Mock Patients Data
 // ============================================================
-export const mockPatients: Patient[] = generatedPatients;
+export const mockPatients: Patient[] = generatedPatients as unknown as Patient[];
 
 // ============================================================
 // Mock Dashboard Stats
 // ============================================================
-export const mockDashboardStats: DashboardStats = generatedDashboardStats;
+export const mockDashboardStats: DashboardStats = {
+  totalPatients: 1284,
+  activePredictions: 47,
+  modelAccuracy: 94.7,
+  criticalAlerts: 8,
+  predictionsToday: 23,
+  newPatientsThisWeek: 34,
+  avgConfidenceScore: 88.3,
+  tasksCompleted: 156,
+  highRiskPatients: 482,
+  diabetesPredictions: 823,
+  heartDiseasePredictions: 594,
+  avgRiskScore: 42,
+  monthlyPredictions: 1240,
+};
 
 
 // ============================================================
@@ -138,55 +158,17 @@ export const mockRecentActivity: RecentActivity[] = [
 // ============================================================
 // Mock Notifications
 // ============================================================
-export const mockNotifications: Notification[] = [
-  {
-    id: 'notif_001',
-    type: 'alert',
-    title: 'Critical Patient Alert',
-    message: 'Patient James Anderson requires immediate attention. Blood pressure: 158/96.',
-    timestamp: '2024-07-21T09:45:00Z',
-    isRead: false,
-    patientId: 'pat_001',
-  },
-  {
-    id: 'notif_002',
-    type: 'warning',
-    title: 'High Risk Prediction',
-    message: 'New diabetes prediction shows 78% risk for patient #HCA-2024-010.',
-    timestamp: '2024-07-21T08:30:00Z',
-    isRead: false,
-  },
-  {
-    id: 'notif_003',
-    type: 'success',
-    title: 'Model Performance Update',
-    message: 'Heart disease model accuracy improved to 96.2% after latest training.',
-    timestamp: '2024-07-21T07:00:00Z',
-    isRead: false,
-  },
-  {
-    id: 'notif_004',
-    type: 'info',
-    title: 'Weekly Report Ready',
-    message: 'Your weekly analytics report for July 14–21 has been generated.',
-    timestamp: '2024-07-21T06:00:00Z',
-    isRead: true,
-    actionUrl: '/analytics',
-  },
-  {
-    id: 'notif_005',
-    type: 'warning',
-    title: 'Scheduled Maintenance',
-    message: 'System maintenance scheduled for July 22, 2:00–4:00 AM EST.',
-    timestamp: '2024-07-20T18:00:00Z',
-    isRead: true,
-  },
-];
+export const mockNotifications: Notification[] = generatedNotifications as unknown as Notification[];
+
+// ============================================================
+// Mock Analytics Data
+// ============================================================
+export const mockAnalyticsData = generatedAnalytics;
 
 // ============================================================
 // Mock Predictions
 // ============================================================
-export const mockPredictions: DiseasePrediction[] = generatedPredictions;
+export const mockPredictions: DiseasePrediction[] = generatedPredictions as unknown as DiseasePrediction[];
 
 
 
