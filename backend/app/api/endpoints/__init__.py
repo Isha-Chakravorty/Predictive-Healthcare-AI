@@ -1,1 +1,1 @@
-from app.api.endpoints import auth, patients, predictions
+from app.api.endpoints import auth, patients, predictions, analytics
