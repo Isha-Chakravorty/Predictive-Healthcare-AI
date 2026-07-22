@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useToast } from '../context/ToastContext';
 import { ROUTES } from '../constants';
+import patientService from '../services/patientService';
 
 const patientSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -92,10 +93,29 @@ export function AddPatientPage() {
     setCurrentStep(prev => Math.max(prev - 1, 0));
   };
 
-  const onSubmit = (_data: PatientFormData) => {
-    localStorage.removeItem('patientDraft');
-    success('Patient Registered', 'The patient has been successfully added to the system.');
-    navigate(ROUTES.PATIENTS);
+  const onSubmit = async (data: PatientFormData) => {
+    try {
+      await patientService.create({
+        first_name: data.firstName,
+        last_name: data.lastName,
+        age: data.age,
+        gender: data.gender,
+        email: data.email,
+        phone: data.phone,
+        blood_group: data.bloodType,
+        allergies: data.allergies,
+        medical_history: data.chronicConditions,
+        smoking_status: data.smokingStatus,
+        alcohol_consumption: data.alcoholConsumption,
+      });
+      localStorage.removeItem('patientDraft');
+      success('Patient Registered', 'The patient has been successfully added to the system.');
+      navigate(ROUTES.PATIENTS);
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { detail?: string } } };
+      const msg = apiError?.response?.data?.detail ?? 'Failed to create patient.';
+      error('Registration Failed', msg);
+    }
   };
 
   return (

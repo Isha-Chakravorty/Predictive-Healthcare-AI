@@ -7,10 +7,12 @@ import { StatusBadge } from '../components/ui/Badge';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { getInitials, formatDate } from '../utils';
+import authService from '../services/authService';
+import { adaptUser } from '../services/adapters';
 
 export function ProfilePage() {
   const { user, updateUser } = useAuth();
-  const { success } = useToast();
+  const { success, error } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'activity'>('profile');
@@ -28,11 +30,38 @@ export function ProfilePage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise(r => setTimeout(r, 1000));
-    updateUser(form);
-    setIsSaving(false);
-    setIsEditing(false);
-    success('Profile updated', 'Your profile information has been saved.');
+    try {
+      const res = await authService.updateProfile(
+        `${form.firstName} ${form.lastName}`.trim()
+      );
+      updateUser(adaptUser(res));
+      setIsSaving(false);
+      setIsEditing(false);
+      success('Profile updated', 'Your profile information has been saved.');
+    } catch {
+      setIsSaving(false);
+      error('Update failed', 'Could not update your profile. Please try again.');
+    }
+  };
+
+  const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const handlePasswordChange = async () => {
+    if (passwordForm.new !== passwordForm.confirm) {
+      return error('Validation Error', 'New passwords do not match.');
+    }
+    setIsChangingPassword(true);
+    try {
+      await authService.changePassword(passwordForm.current, passwordForm.new);
+      success('Password updated', 'Your password has been changed successfully.');
+      setPasswordForm({ current: '', new: '', confirm: '' });
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { detail?: string } } };
+      error('Update failed', apiError?.response?.data?.detail ?? 'Could not change password.');
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   if (!user) return null;
@@ -194,10 +223,13 @@ export function ProfilePage() {
             <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Change Password</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Ensure your account is using a long, random password to stay secure.</p>
             <div className="max-w-md space-y-4">
-              <Input type="password" label="Current Password" placeholder="••••••••" />
-              <Input type="password" label="New Password" placeholder="••••••••" />
-              <Input type="password" label="Confirm New Password" placeholder="••••••••" />
-              <Button>Update Password</Button>
+              <Input type="password" label="Current Password" placeholder="••••••••" 
+                value={passwordForm.current} onChange={e => setPasswordForm(p => ({ ...p, current: e.target.value }))} />
+              <Input type="password" label="New Password" placeholder="••••••••" 
+                value={passwordForm.new} onChange={e => setPasswordForm(p => ({ ...p, new: e.target.value }))} />
+              <Input type="password" label="Confirm New Password" placeholder="••••••••" 
+                value={passwordForm.confirm} onChange={e => setPasswordForm(p => ({ ...p, confirm: e.target.value }))} />
+              <Button isLoading={isChangingPassword} onClick={handlePasswordChange}>Update Password</Button>
             </div>
           </div>
 

@@ -9,7 +9,8 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useToast } from '../context/ToastContext';
 import { ROUTES } from '../constants';
-import { patientService } from '../services/mockService';
+import patientService from '../services/patientService';
+import { adaptPatient } from '../services/adapters';
 
 const patientSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -56,11 +57,10 @@ export function EditPatientPage() {
     async function loadPatient() {
       if (!id) return;
       try {
-        const response = await patientService.getById(id);
-        if (response.success && response.data) {
-          const p = response.data;
-          reset({
-            firstName: p.firstName,
+        const raw = await patientService.getById(id);
+        const p = adaptPatient(raw);
+        reset({
+          firstName: p.firstName,
             lastName: p.lastName,
             age: p.age,
             gender: p.gender as 'male' | 'female' | 'other',
@@ -72,14 +72,11 @@ export function EditPatientPage() {
             smokingStatus: (p.lifestyle?.smokingStatus as 'never' | 'former' | 'current') || 'never',
             alcoholConsumption: (p.lifestyle?.alcoholConsumption as 'none' | 'light' | 'moderate' | 'heavy') || 'none',
             physicalActivity: (p.lifestyle?.physicalActivity as 'sedentary' | 'light' | 'moderate' | 'active') || 'light',
-            diet: p.lifestyle?.diet || 'Balanced',
-          });
-        } else {
-          error('Error', 'Patient not found');
-          navigate(ROUTES.PATIENTS);
-        }
+          diet: p.lifestyle?.diet || 'Balanced',
+        });
       } catch {
-        error('Error', 'Failed to load patient');
+        error('Error', 'Failed to load patient or patient not found');
+        navigate(ROUTES.PATIENTS);
       } finally {
         setIsLoading(false);
       }
@@ -105,9 +102,28 @@ export function EditPatientPage() {
     setCurrentStep(prev => Math.max(prev - 1, 0));
   };
 
-  const onSubmit = (_data: PatientFormData) => {
-    success('Patient Updated', 'Changes have been successfully saved.');
-    navigate(ROUTES.PATIENT_DETAIL.replace(':id', id!));
+  const onSubmit = async (data: PatientFormData) => {
+    try {
+      await patientService.update(id!, {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        age: data.age,
+        gender: data.gender,
+        email: data.email,
+        phone: data.phone,
+        blood_group: data.bloodType,
+        allergies: data.allergies,
+        medical_history: data.chronicConditions,
+        smoking_status: data.smokingStatus,
+        alcohol_consumption: data.alcoholConsumption,
+      });
+      success('Patient Updated', 'Changes have been successfully saved.');
+      navigate(ROUTES.PATIENT_DETAIL.replace(':id', id!));
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { detail?: string } } };
+      const msg = apiError?.response?.data?.detail ?? 'Failed to update patient.';
+      error('Update Failed', msg);
+    }
   };
 
   if (isLoading) {

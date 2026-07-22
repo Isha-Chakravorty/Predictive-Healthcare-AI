@@ -5,11 +5,12 @@ import { Button } from '../components/ui/Button';
 import { Table } from '../components/ui/Table';
 import { Pagination } from '../components/ui/Pagination';
 import { RiskBadge, ScoreBadge } from '../components/ui/Badge';
-import { predictionService } from '../services/mockService';
+import predictionService from '../services/predictionService';
 import { useToast } from '../context/ToastContext';
 import { ROUTES, DISEASE_LABELS } from '../constants';
 import type { DiseasePrediction, Column } from '../types';
 import { formatDate } from '../utils';
+import { adaptPredictions } from '../services/adapters';
 
 export function PredictionHistoryPage() {
   const { success, error } = useToast();
@@ -29,25 +30,23 @@ export function PredictionHistoryPage() {
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Pass all our filters to the service
-      const res = await predictionService.getAll({ 
-        page, 
-        pageSize, 
-        search, 
-        status: 'all' // History shows all statuses, usually 'completed'
+      const rawData = await predictionService.getAll({
+        skip: (page - 1) * pageSize,
+        limit: pageSize,
+        disease: diseaseFilter !== 'all' ? diseaseFilter : undefined,
+        risk_level: riskFilter !== 'all' ? riskFilter : undefined,
       });
-      // In a real app, the backend would handle these exact filters.
-      // Here we will do some client-side post-filtering for demonstration:
-      let filteredData = res.data;
-      if (diseaseFilter !== 'all') {
-        filteredData = filteredData.filter(p => p.diseaseType === diseaseFilter);
+      let adapted = adaptPredictions(rawData);
+      if (search) {
+        const q = search.toLowerCase();
+        adapted = adapted.filter(
+          p => p.patientId.toLowerCase().includes(q) ||
+               p.diseaseType.toLowerCase().includes(q) ||
+               (p.notes ?? '').toLowerCase().includes(q)
+        );
       }
-      if (riskFilter !== 'all') {
-        filteredData = filteredData.filter(p => p.riskLevel === riskFilter);
-      }
-      
-      setPredictions(filteredData);
-      setTotal(res.pagination.total); // Note: total might not perfectly reflect client-side filtering in mock
+      setPredictions(adapted);
+      setTotal(rawData.length < pageSize ? (page - 1) * pageSize + rawData.length : page * pageSize + 1);
     } catch {
       error('Error', 'Failed to load prediction history.');
     } finally {

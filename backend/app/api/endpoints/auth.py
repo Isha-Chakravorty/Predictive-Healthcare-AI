@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 import logging
+from pydantic import BaseModel, Field
+from typing import Optional
+
 from app.api.dependencies import get_db, get_current_user
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token
 from app.core.config import settings
@@ -12,6 +15,16 @@ from app.schemas.auth import LoginRequest, Token, RefreshRequest
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
+
+
+class ProfileUpdateRequest(BaseModel):
+    full_name: Optional[str] = Field(None, min_length=2, max_length=100)
+
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=8)
+
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
@@ -34,6 +47,7 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     logger.info(f"Successfully registered user: {user.email}")
     return user
 
+
 @router.post("/login", response_model=Token)
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == request.email).first()
@@ -54,6 +68,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         "refresh_token": create_refresh_token(user.id),
         "token_type": "bearer"
     }
+
 
 @router.post("/refresh", response_model=Token)
 def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
@@ -90,6 +105,33 @@ def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
         "token_type": "bearer"
     }
 
+
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@router.put("/me", response_model=UserResponse)
+def update_profile(
+    update_data: ProfileUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if update_data.full_name is not None:
+        current_user.full_name = update_data.full_name
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.post("/me/change-password", status_code=status.HTTP_200_OK)
+def change_password(
+    request: PasswordChangeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not verify_password(request.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    current_user.hashed_password = get_password_hash(request.new_password)
+    db.commit()
+    return {"message": "Password updated successfully"}

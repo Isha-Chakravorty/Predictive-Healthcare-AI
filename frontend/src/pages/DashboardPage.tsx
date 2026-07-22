@@ -13,9 +13,11 @@ import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { StatCard } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { StatCardSkeleton, ChartSkeleton, ActivitySkeleton } from '../components/ui/Skeleton';
-
-import { mockPatients, mockPredictions, mockRecentActivity, mockDashboardStats, mockCheckups, mockNotifications } from '../mock';
-import type { DashboardStats } from '../types';
+import analyticsService from '../services/analyticsService';
+import type { DashboardStats as BackendDashboardStats, DiseaseAnalytics, TrendAnalytics, RecentActivity } from '../services/analyticsService';
+import type { BackendPrediction } from '../services/predictionService';
+import type { BackendPatient } from '../services/patientService';
+import { adaptPatients, adaptPredictions } from '../services/adapters';
 import { formatDate } from '../utils';
 import { CHART_COLORS } from '../constants';
 import { Link } from 'react-router-dom';
@@ -36,27 +38,42 @@ const chartOptions = {
 };
 
 export function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [stats, setStats] = useState<BackendDashboardStats | null>(null);
+  const [diseaseData, setDiseaseData] = useState<DiseaseAnalytics | null>(null);
+  const [trendData, setTrendData] = useState<TrendAnalytics | null>(null);
+  const [recentActivity, setRecentActivity] = useState<RecentActivity | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      // simulate delay
-      await new Promise(r => setTimeout(r, 600));
-      setStats(mockDashboardStats);
-      setIsLoading(false);
+      try {
+        const [dashStats, disease, trends, recent] = await Promise.all([
+          analyticsService.getDashboard(),
+          analyticsService.getDiseaseAnalytics(),
+          analyticsService.getTrends(),
+          analyticsService.getRecentActivity(),
+        ]);
+        setStats(dashStats);
+        setDiseaseData(disease);
+        setTrendData(trends);
+        setRecentActivity(recent);
+      } catch (err) {
+        console.error('Dashboard load error:', err);
+      } finally {
+        setIsLoading(false);
+      }
     };
     load();
   }, []);
 
   const statCards = useMemo(() => stats
     ? [
-        { title: 'Total Patients', value: stats.totalPatients.toLocaleString(), change: 4.2, changeType: 'increase' as const, icon: <Users size={20} />, iconBg: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400', subtitle: `${stats.newPatientsThisWeek} new this week` },
-        { title: 'High Risk Patients', value: stats.highRiskPatients?.toLocaleString() ?? 482, change: -2.1, changeType: 'decrease' as const, icon: <AlertTriangle size={20} />, iconBg: 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400', subtitle: 'Requires monitoring' },
-        { title: 'Diabetes Predictions', value: stats.diabetesPredictions?.toLocaleString() ?? 823, change: 12.5, changeType: 'increase' as const, icon: <Activity size={20} />, iconBg: 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400', subtitle: 'AI analysis complete' },
-        { title: 'Heart Disease', value: stats.heartDiseasePredictions?.toLocaleString() ?? 594, change: 8.3, changeType: 'increase' as const, icon: <Heart size={20} />, iconBg: 'bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400', subtitle: 'AI analysis complete' },
-        { title: 'Avg Risk Score', value: `${stats.avgRiskScore ?? 42}`, change: -1.2, changeType: 'decrease' as const, icon: <TrendingUp size={20} />, iconBg: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400', subtitle: 'Across all cohorts' },
-        { title: 'Monthly Predictions', value: stats.monthlyPredictions?.toLocaleString() ?? 1240, change: 18.2, changeType: 'increase' as const, icon: <Brain size={20} />, iconBg: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400', subtitle: '30-day volume' },
+        { title: 'Total Patients',       value: stats.total_patients.toLocaleString(),     change: 4.2,   changeType: 'increase' as const, icon: <Users size={20} />,        iconBg: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',     subtitle: 'Registered patients' },
+        { title: 'Active Patients',      value: stats.active_patients.toLocaleString(),    change: 2.1,   changeType: 'increase' as const, icon: <Activity size={20} />,    iconBg: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400', subtitle: 'Currently monitored' },
+        { title: 'Total Predictions',    value: stats.total_predictions.toLocaleString(),  change: 12.5,  changeType: 'increase' as const, icon: <Brain size={20} />,       iconBg: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',  subtitle: 'ML predictions made' },
+        { title: 'High Risk Patients',   value: stats.high_risk_predictions.toLocaleString(), change: -2.1, changeType: 'decrease' as const, icon: <AlertTriangle size={20} />, iconBg: 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400',         subtitle: 'Requires monitoring' },
+        { title: 'Medium Risk',          value: stats.medium_risk_predictions.toLocaleString(), change: 3.3, changeType: 'increase' as const, icon: <Heart size={20} />,    iconBg: 'bg-orange-50 dark:bg-orange-900/20 text-orange-500 dark:text-orange-400',  subtitle: 'Under observation' },
+        { title: 'Low Risk',             value: stats.low_risk_predictions.toLocaleString(),   change: 8.3,  changeType: 'increase' as const, icon: <TrendingUp size={20} />, iconBg: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400',    subtitle: 'Good health indicators' },
       ]
     : [], [stats]);
 
@@ -70,19 +87,47 @@ export function DashboardPage() {
       case 'critical':
         return <Badge variant="danger">{risk}</Badge>;
       case 'moderate':
+      case 'medium':
         return <Badge variant="warning">{risk}</Badge>;
       default:
         return <Badge variant="success">{risk}</Badge>;
     }
   };
 
-  // Mock data calculations for charts
-  const monthlyLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-  const diseaseData = {
-    labels: ['Diabetes', 'Heart Disease', 'Stroke', 'Kidney', 'Hypertension', 'Cancer Risk'],
-    counts: [450, 320, 150, 180, 520, 120],
-    colors: [CHART_COLORS.primary, CHART_COLORS.secondary, CHART_COLORS.warning, CHART_COLORS.purple, CHART_COLORS.success, CHART_COLORS.danger],
-  };
+  // Derive chart data from real API
+  const chartDiseaseData = useMemo(() => {
+    if (!diseaseData?.distribution?.length) return {
+      labels: ['No data'],
+      counts: [1],
+      colors: ['#94a3b8'],
+    };
+    const colors = [CHART_COLORS.primary, CHART_COLORS.secondary, CHART_COLORS.warning, CHART_COLORS.purple, CHART_COLORS.success, CHART_COLORS.danger];
+    return {
+      labels: diseaseData.distribution.map(d => d.disease),
+      counts: diseaseData.distribution.map(d => d.count),
+      colors: diseaseData.distribution.map((_, i) => colors[i % colors.length]),
+    };
+  }, [diseaseData]);
+
+  const trendChartData = useMemo(() => {
+    const points = trendData?.monthly ?? [];
+    if (!points.length) return { labels: ['–'], data: [0] };
+    return {
+      labels: points.map(p => p.date),
+      data: points.map(p => p.count),
+    };
+  }, [trendData]);
+
+  const recentPredictions = useMemo(() =>
+    adaptPredictions((recentActivity?.recent_predictions ?? []) as BackendPrediction[]),
+    [recentActivity]
+  );
+  const recentPatients = useMemo(() =>
+    adaptPatients((recentActivity?.recent_patients ?? []) as BackendPatient[]),
+    [recentActivity]
+  );
+
+  const monthlyLabels = trendChartData.labels;
 
   return (
     <div className="space-y-6 max-w-[1600px]">
@@ -121,8 +166,8 @@ export function DashboardPage() {
           {isLoading ? <ChartSkeleton height={220} /> : (
             <div style={{ height: 220 }}>
               <Doughnut data={{
-                labels: diseaseData.labels,
-                datasets: [{ data: diseaseData.counts, backgroundColor: diseaseData.colors, borderWidth: 0, hoverOffset: 4 }]
+                labels: chartDiseaseData.labels,
+                datasets: [{ data: chartDiseaseData.counts, backgroundColor: chartDiseaseData.colors, borderWidth: 0, hoverOffset: 4 }]
               }} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }, cutout: '65%' }} />
             </div>
           )}
@@ -138,7 +183,7 @@ export function DashboardPage() {
               <Line data={{
                 labels: monthlyLabels,
                 datasets: [{
-                  label: 'Predictions', data: [820, 930, 1050, 980, 1150, 1320, 1450],
+                  label: 'Predictions', data: trendChartData.data,
                   borderColor: CHART_COLORS.primary, backgroundColor: `${CHART_COLORS.primary}20`, fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3
                 }]
               }} options={chartOptions} />
@@ -245,9 +290,9 @@ export function DashboardPage() {
                 {isLoading ? (
                   <tr><td colSpan={5} className="p-4 text-center text-slate-500">Loading...</td></tr>
                 ) : (
-                  mockPredictions.slice(0, 5).map((pred) => (
+                  recentPredictions.slice(0, 5).map((pred) => (
                     <tr key={pred.id} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{pred.patientName}</td>
+                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{pred.patientId.slice(0, 8)}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300 capitalize">{pred.diseaseType.replace('_', ' ')}</td>
                       <td className="px-4 py-3">{getRiskBadge(pred.riskLevel)}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{(pred.confidence * 100).toFixed(1)}%</td>
@@ -271,13 +316,23 @@ export function DashboardPage() {
           </div>
           {isLoading ? <ActivitySkeleton /> : (
             <div className="space-y-4 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
-              {mockRecentActivity.slice(0, 6).map((activity) => (
-                <div key={activity.id} className="flex gap-3">
-                  <div className="mt-0.5">{activitySeverityIcon[activity.severity || 'info']}</div>
+              {recentPredictions.slice(0, 3).map((pred) => (
+                <div key={pred.id} className="flex gap-3">
+                  <div className="mt-0.5">{activitySeverityIcon[pred.riskLevel === 'high' ? 'warning' : 'info']}</div>
                   <div>
-                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{activity.title}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{activity.description}</p>
-                    <span className="text-[10px] text-slate-400 mt-1 block">{formatDate(activity.timestamp, 'relative')}</span>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Prediction: {pred.diseaseType}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Risk Level: {pred.riskLevel}</p>
+                    <span className="text-[10px] text-slate-400 mt-1 block">{formatDate(pred.createdAt, 'relative')}</span>
+                  </div>
+                </div>
+              ))}
+              {recentPatients.slice(0, 3).map((pat) => (
+                <div key={pat.id} className="flex gap-3">
+                  <div className="mt-0.5">{activitySeverityIcon['success']}</div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">New Patient: {pat.firstName} {pat.lastName}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Age: {pat.age}, {pat.gender}</p>
+                    <span className="text-[10px] text-slate-400 mt-1 block">{formatDate(pat.createdAt, 'relative')}</span>
                   </div>
                 </div>
               ))}
@@ -299,11 +354,11 @@ export function DashboardPage() {
             </h3>
           </div>
           <div className="space-y-3">
-            {mockPatients.filter(p => p.riskLevel === 'high' || p.riskLevel === 'critical').slice(0, 4).map(patient => (
+            {recentPatients.filter(p => p.riskLevel === 'high' || p.riskLevel === 'critical').slice(0, 4).map(patient => (
               <div key={patient.id} className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/10 rounded-lg">
                 <div>
                   <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{patient.firstName} {patient.lastName}</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">ID: {patient.patientId}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">ID: PT-{patient.id.slice(0,8).toUpperCase()}</p>
                 </div>
                 <Badge variant="danger">{patient.riskLevel}</Badge>
               </div>
@@ -322,14 +377,14 @@ export function DashboardPage() {
             </h3>
           </div>
           <div className="space-y-3">
-            {mockCheckups?.slice(0, 4).map(checkup => (
+            {recentPatients?.slice(0, 4).map(checkup => (
               <div key={checkup.id} className="flex items-start gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/30 rounded-lg transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-600">
                 <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-2 rounded-lg">
                   <Calendar size={16} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{checkup.patientName}</p>
-                  <p className="text-xs text-slate-500">{checkup.type} · {new Date(checkup.date).toLocaleDateString()}</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{checkup.firstName} {checkup.lastName}</p>
+                  <p className="text-xs text-slate-500">General Checkup · {new Date(checkup.updatedAt).toLocaleDateString()}</p>
                 </div>
               </div>
             ))}
@@ -347,13 +402,14 @@ export function DashboardPage() {
             </h3>
           </div>
           <div className="space-y-3">
-            {mockNotifications.slice(0, 4).map(notification => (
+            {[].slice(0, 4).map((notification: any) => (
               <div key={notification.id} className="flex flex-col p-3 hover:bg-slate-50 dark:hover:bg-slate-700/30 rounded-lg transition-colors">
                 <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{notification.title}</p>
                 <p className="text-xs text-slate-500 line-clamp-2 mt-1">{notification.message}</p>
                 <span className="text-[10px] text-slate-400 mt-2">{formatDate(notification.timestamp, 'relative')}</span>
               </div>
             ))}
+            <p className="text-xs text-slate-500">No new notifications.</p>
           </div>
         </motion.div>
       </div>

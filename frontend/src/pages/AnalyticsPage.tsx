@@ -10,7 +10,8 @@ import { BarChart3, TrendingUp, Users, Brain, Download, Lightbulb, Activity, Arr
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Input';
 import { ChartSkeleton, StatCardSkeleton } from '../components/ui/Skeleton';
-import { analyticsService } from '../services/mockService';
+import analyticsService from '../services/analyticsService';
+import { adaptAnalytics } from '../services/adapters';
 import { CHART_COLORS, DISEASE_LABELS } from '../constants';
 import type { AnalyticsMetrics } from '../types';
 import { useToast } from '../context/ToastContext';
@@ -39,11 +40,14 @@ export function AnalyticsPage() {
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
-      const res = await analyticsService.getMetrics();
-      if (res.data) {
-        setData(res.data);
+      try {
+        const raw = await analyticsService.getAnalytics();
+        setData(adaptAnalytics(raw));
+      } catch (err) {
+        console.error('Failed to load analytics data', err);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     load();
   }, [period]);

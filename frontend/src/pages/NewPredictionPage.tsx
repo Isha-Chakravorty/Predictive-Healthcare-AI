@@ -9,7 +9,9 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useToast } from '../context/ToastContext';
 import { ROUTES, DISEASE_LABELS } from '../constants';
-import { patientService } from '../services/mockService';
+import patientService from '../services/patientService';
+import predictionService from '../services/predictionService';
+import { adaptPatients } from '../services/adapters';
 import { Patient } from '../types';
 
 const predictionSchema = z.object({
@@ -116,15 +118,18 @@ export function NewPredictionPage() {
   };
 
   useEffect(() => {
-    // Load patients for dropdown
+    // Load patients for dropdown from real backend
     const fetchPatients = async () => {
-      const res = await patientService.getAll();
-      if (res.success && res.data) {
-        setPatients(res.data);
+      try {
+        const res = await patientService.getAll({ limit: 100 });
+        const adapted = adaptPatients(res.items);
+        setPatients(adapted);
         if (initialPatientId) {
-          const p = res.data.find(pat => pat.id === initialPatientId);
+          const p = adapted.find(pat => pat.id === initialPatientId);
           if (p) prefillFromPatient(p);
         }
+      } catch (err) {
+        console.error('Failed to load patients:', err);
       }
     };
     fetchPatients();
@@ -151,17 +156,62 @@ export function NewPredictionPage() {
     setCurrentStep(prev => Math.max(prev - 1, 0));
   };
 
-  const onSubmit = async () => {
+  const onSubmit = async (data: PredictionFormData) => {
     setIsRunning(true);
-    // Simulate AI inference delay
-    setTimeout(() => {
-      setIsRunning(false);
+    try {
+      // Build input features based on disease type
+      let inputFeatures: Record<string, number | string>;
+      if (type === 'diabetes') {
+        inputFeatures = {
+          Pregnancies: 0,
+          Glucose: data.glucoseLevel,
+          BloodPressure: data.bloodPressureDiastolic,
+          SkinThickness: 20,
+          Insulin: 80,
+          BMI: data.weight / Math.pow(data.height / 100, 2),
+          DiabetesPedigreeFunction: 0.5,
+          Age: data.age,
+        };
+      } else if (type === 'heart_disease') {
+        inputFeatures = {
+          age: data.age,
+          sex: data.gender === 'male' ? 1 : 0,
+          cp: 0,
+          trestbps: data.bloodPressureSystolic,
+          chol: data.cholesterol,
+          fbs: data.glucoseLevel > 120 ? 1 : 0,
+          restecg: 0,
+          thalach: data.heartRate,
+          exang: 0,
+          oldpeak: 1.0,
+          slope: 2,
+          ca: 0,
+          thal: 2,
+        };
+      } else {
+        // Fallback: try diabetes format
+        inputFeatures = {
+          Glucose: data.glucoseLevel,
+          BMI: data.weight / Math.pow(data.height / 100, 2),
+          Age: data.age,
+        };
+      }
+
+      const result = await predictionService.create({
+        patient_id: data.patientId,
+        input_features: inputFeatures,
+      });
+
       localStorage.removeItem(draftKey);
       success('Prediction Complete', 'AI analysis has been successfully generated.');
-      // Navigate to mock result (we will generate a random ID for the demo)
-      const mockResultId = `pred_${Math.floor(Math.random() * 1000)}`;
-      navigate(ROUTES.PREDICTION_RESULT.replace(':id', mockResultId));
-    }, 2500);
+      navigate(ROUTES.PREDICTION_RESULT.replace(':id', result.id));
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { detail?: string } } };
+      const msg = apiError?.response?.data?.detail ?? 'AI prediction failed.';
+      error('Prediction Failed', msg);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const diseaseTitle = type ? DISEASE_LABELS[type] || 'Disease' : 'Disease';

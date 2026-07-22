@@ -143,20 +143,18 @@ When a client hits `POST /predictions`, the application automatically:
 
 ## Project Architecture Overview
 
-The application follows a modular, component-driven architecture. 
-- **Routing:** Handled by React Router with lazy-loaded components for optimal code splitting.
+The application follows a modular, component-driven full-stack architecture. 
+- **Frontend Routing:** Handled by React Router with lazy-loaded components for optimal code splitting.
 - **State Management:** Local component state paired with React Context for global state (Authentication, Theming, Notifications).
 - **Styling Strategy:** Tailwind CSS utility classes ensure consistent, responsive designs without external CSS files.
 - **Build Pipeline:** Vite provides blazing-fast builds and bundles vendor libraries separately to maximize caching efficiency.
-
-For more detailed architectural insights, please refer to the [Architecture Documentation](docs/architecture.md).
+- **Backend & ML Integration:** FastAPI powers a high-performance REST API. The machine learning pipeline is natively integrated using scikit-learn and joblib for real-time, low-latency disease prediction scoring.
 
 ## Future Enhancements
 
-- Integration with a live Python backend (FastAPI/Flask) for real-time model inference.
-- Authentication integration (OAuth/JWT) with role-based access control (RBAC).
-- Comprehensive unit and integration testing suite (Vitest/Cypress).
 - Multi-language localization (i18n).
+- Comprehensive unit and integration testing suite (Vitest/pytest).
+- Real-time websockets for system notifications.
 
 ## License
 

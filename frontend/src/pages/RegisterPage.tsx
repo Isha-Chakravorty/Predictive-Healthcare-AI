@@ -29,7 +29,7 @@ const registerSchema = z.object({
 type RegisterForm = z.infer<typeof registerSchema>;
 
 export function RegisterPage() {
-  const { login } = useAuth();
+  const { register: authRegister } = useAuth();
   const { success, error: toastError } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -43,13 +43,18 @@ export function RegisterPage() {
 
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1500));
     try {
-      await login(data.email, data.password);
+      await authRegister({
+        email: data.email,
+        full_name: `${data.firstName} ${data.lastName}`,
+        password: data.password,
+      });
       success('Account created!', 'Welcome to Predictive Healthcare AI.');
       navigate(ROUTES.DASHBOARD);
-    } catch {
-      toastError('Registration failed', 'Please try again.');
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { detail?: string } } };
+      const msg = apiError?.response?.data?.detail ?? 'Please try again.';
+      toastError('Registration failed', msg);
     } finally {
       setIsLoading(false);
     }

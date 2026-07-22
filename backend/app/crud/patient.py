@@ -6,12 +6,35 @@ from uuid import UUID
 from app.models.patient import Patient
 from app.schemas.patient import PatientCreate, PatientUpdate
 
+
 def get_patient(db: Session, patient_id: UUID, user_id: UUID) -> Optional[Patient]:
     return db.query(Patient).filter(
         Patient.id == patient_id, 
         Patient.created_by == user_id,
         Patient.is_deleted == False
     ).first()
+
+
+def count_patients(
+    db: Session,
+    user_id: UUID,
+    search: Optional[str] = None
+) -> int:
+    query = db.query(Patient).filter(
+        Patient.created_by == user_id,
+        Patient.is_deleted == False
+    )
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            or_(
+                Patient.first_name.ilike(search_term),
+                Patient.last_name.ilike(search_term),
+                Patient.email.ilike(search_term)
+            )
+        )
+    return query.count()
+
 
 def get_patients(
     db: Session, 
@@ -35,7 +58,8 @@ def get_patients(
             )
         )
         
-    return query.offset(skip).limit(limit).all()
+    return query.order_by(Patient.created_at.desc()).offset(skip).limit(limit).all()
+
 
 def create_patient(db: Session, patient: PatientCreate, user_id: UUID) -> Patient:
     db_patient = Patient(**patient.model_dump(), created_by=user_id)
@@ -43,6 +67,7 @@ def create_patient(db: Session, patient: PatientCreate, user_id: UUID) -> Patien
     db.commit()
     db.refresh(db_patient)
     return db_patient
+
 
 def update_patient(
     db: Session, 
@@ -57,6 +82,7 @@ def update_patient(
     db.commit()
     db.refresh(db_patient)
     return db_patient
+
 
 def delete_patient(db: Session, db_patient: Patient) -> Patient:
     # Soft delete implementation

@@ -27,7 +27,7 @@ export function LoginPage() {
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: 'sarah.mitchell@healthcare-ai.com', password: 'demo1234' },
+    defaultValues: { email: '', password: '' },
   });
 
   const onSubmit = async (data: LoginForm) => {
@@ -36,8 +36,10 @@ export function LoginPage() {
       await login(data.email, data.password);
       success('Welcome back!', 'You have been successfully signed in.');
       navigate(ROUTES.DASHBOARD);
-    } catch {
-      toastError('Sign in failed', 'Invalid email or password.');
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { detail?: string } } };
+      const msg = apiError?.response?.data?.detail ?? 'Invalid email or password.';
+      toastError('Sign in failed', msg);
     } finally {
       setIsLoading(false);
     }
@@ -50,13 +52,6 @@ export function LoginPage() {
         <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
           Access your Healthcare AI dashboard
         </p>
-      </div>
-
-      {/* Demo hint */}
-      <div className="mb-5 p-3.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-        <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1">Demo Credentials</p>
-        <p className="text-xs text-blue-600 dark:text-blue-400 font-mono">sarah.mitchell@healthcare-ai.com</p>
-        <p className="text-xs text-blue-600 dark:text-blue-400 font-mono">demo1234</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

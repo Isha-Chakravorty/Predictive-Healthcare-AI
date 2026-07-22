@@ -8,10 +8,13 @@ import {
 import { Button } from '../components/ui/Button';
 import { Badge, RiskBadge, StatusBadge } from '../components/ui/Badge';
 import { useToast } from '../context/ToastContext';
-import { mockPatients } from '../mock';
 import { formatDate } from '../utils';
 import { Line, Doughnut } from 'react-chartjs-2';
-import { CHART_COLORS } from '../constants';
+import { CHART_COLORS, ROUTES } from '../constants';
+import patientService from '../services/patientService';
+import predictionService from '../services/predictionService';
+import { adaptPatient, adaptPredictions } from '../services/adapters';
+import type { Patient, DiseasePrediction } from '../types';
 
 export function PatientProfilePage() {
   const navigate = useNavigate();
@@ -19,15 +22,36 @@ export function PatientProfilePage() {
   const { success, error } = useToast();
   const [activeTab, setActiveTab] = useState<'overview' | 'medical' | 'predictions'>('overview');
 
-  const patient = React.useMemo(() => mockPatients.find(p => p.id === id) || null, [id]);
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [predictions, setPredictions] = useState<DiseasePrediction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!patient) {
-      error('Not Found', 'Patient record could not be found.');
+    async function loadData() {
+      if (!id) return;
+      setIsLoading(true);
+      try {
+        const rawPatient = await patientService.getById(id);
+        setPatient(adaptPatient(rawPatient));
+        
+        try {
+          const rawPredictions = await predictionService.getAll({ limit: 5 });
+          const adapted = adaptPredictions(rawPredictions).filter(p => p.patientId === id);
+          setPredictions(adapted);
+        } catch (predErr) {
+          console.error('Failed to load predictions', predErr);
+        }
+      } catch {
+        error('Not Found', 'Patient record could not be found.');
+        navigate(ROUTES.PATIENTS);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, [patient, error]);
+    loadData();
+  }, [id, error, navigate]);
 
-  if (!patient) {
+  if (isLoading || !patient) {
     return (
       <div className="flex items-center justify-center h-full min-h-[400px]">
         <div className="animate-pulse flex flex-col items-center">

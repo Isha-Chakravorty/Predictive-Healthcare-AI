@@ -9,7 +9,8 @@ import { Doughnut } from 'react-chartjs-2';
 import { Button } from '../components/ui/Button';
 import { useToast } from '../context/ToastContext';
 import { ROUTES, DISEASE_LABELS } from '../constants';
-import { predictionService } from '../services/mockService';
+import predictionService from '../services/predictionService';
+import { adaptPrediction } from '../services/adapters';
 import { DiseasePrediction } from '../types';
 
 export function PredictionResultPage() {
@@ -23,22 +24,23 @@ export function PredictionResultPage() {
     async function load() {
       if (!id) return;
       try {
-        const res = await predictionService.getById(id);
-        if (res.success && res.data) {
-          setPrediction(res.data);
-        } else {
-          // If not found, just grab any prediction for demo purposes
-          const fallback = await predictionService.getAll();
-          if (fallback.data && fallback.data.length > 0) {
-             setPrediction(fallback.data[0]);
-             success('Demo Mode', 'Using a sample prediction result.');
-          } else {
-             error('Error', 'Prediction not found.');
-             navigate(ROUTES.PREDICTION);
-          }
-        }
+        const raw = await predictionService.getById(id);
+        setPrediction(adaptPrediction(raw));
       } catch {
-        error('Error', 'Failed to load prediction result.');
+        // If the prediction doesn't exist, try loading the most recent one
+        try {
+          const all = await predictionService.getAll({ limit: 1 });
+          if (all.length > 0) {
+            setPrediction(adaptPrediction(all[0]));
+            success('Showing Latest', 'Displaying your most recent prediction result.');
+          } else {
+            error('Not Found', 'Prediction not found.');
+            navigate(ROUTES.PREDICTION);
+          }
+        } catch {
+          error('Error', 'Failed to load prediction result.');
+          navigate(ROUTES.PREDICTION);
+        }
       } finally {
         setIsLoading(false);
       }

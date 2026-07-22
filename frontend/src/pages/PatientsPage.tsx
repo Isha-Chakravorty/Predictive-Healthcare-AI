@@ -1,45 +1,58 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Users, Plus } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { AdvancedTable, ColumnDef } from '../components/ui/AdvancedTable';
 import { RiskBadge, StatusBadge } from '../components/ui/Badge';
 import { useToast } from '../context/ToastContext';
-import { mockPatients } from '../mock';
 import type { Patient } from '../types';
 import { formatDate } from '../utils';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../constants';
 import { EmptyState } from '../components/ui/EmptyState';
+import patientService from '../services/patientService';
+import { adaptPatients } from '../services/adapters';
 
 export function PatientsPage() {
-  const { success } = useToast();
+  const { success, error: toastError } = useToast();
   const navigate = useNavigate();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+
+  const loadPatients = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const result = await patientService.getAll({ skip: 0, limit: 100 });
+      setPatients(adaptPatients(result.items));
+      setTotal(result.total);
+    } catch (err) {
+      console.error('Failed to load patients:', err);
+      toastError('Load Failed', 'Could not fetch patients from server.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // Simulate loading to show off skeleton and fetch from our new 300+ mock data
-    const timer = setTimeout(() => {
-      setPatients(mockPatients);
-      setIsLoading(false);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, []);
+    loadPatients();
+  }, [loadPatients]);
 
   const handleRowClick = (patient: Patient) => {
     navigate(ROUTES.PATIENT_DETAIL.replace(':id', patient.id));
   };
 
-  const handleBulkDelete = (selected: Patient[]) => {
-    const ids = new Set(selected.map(p => p.id));
-    setPatients(patients.filter(p => !ids.has(p.id)));
-    success('Patients Deleted', `Successfully removed ${selected.length} records.`);
+  const handleBulkDelete = async (selected: Patient[]) => {
+    try {
+      await Promise.all(selected.map(p => patientService.delete(p.id)));
+      success('Patients Deleted', `Successfully removed ${selected.length} records.`);
+      loadPatients();
+    } catch {
+      toastError('Delete Failed', 'Could not delete selected patients.');
+    }
   };
 
   const handleBulkExport = (selected: Patient[]) => {
     success('Export Started', `Preparing export for ${selected.length} records.`);
-    // AdvancedTable handles the actual CSV download internally when clicking CSV button. 
-    // This custom handler can be used for API-based exports.
   };
 
   const columns: ColumnDef<Patient>[] = [

@@ -137,6 +137,7 @@ export const STORAGE_KEYS = {
   SIDEBAR_COLLAPSED: 'healthcare-ai-sidebar-collapsed',
   USER:              'healthcare-ai-user',
   TOKEN:             'healthcare-ai-token',
+  REFRESH_TOKEN:     'healthcare-ai-refresh-token',
 };
 
 // Validation constants
